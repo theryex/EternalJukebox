@@ -1,0 +1,22 @@
+---
+layout: default
+---
+
+<div id="hero" class="hero-unit">
+    <div class="container">
+        <h2>Loaded Songs</h2>
+        <p class="lead">Browse songs that have already been analyzed and are ready to play.</p>
+
+        <div id="filter-div">
+            <input id="filter" type="text" class="input-large search-query" placeholder="Filter loaded songs..."
+                title="Filter text">
+        </div>
+
+        <div id="loaded-list" class="loaded-songs-list">
+            <p><em>Loading available songs...</em></p>
+        </div>
+    </div>
+    <div id='info'> </div>
+</div>
+
+{% include loaded-js.html %}

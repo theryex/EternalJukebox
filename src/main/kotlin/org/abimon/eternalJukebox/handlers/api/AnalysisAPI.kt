@@ -22,9 +22,72 @@ object AnalysisAPI : IAPI {
     override fun setup(router: Router) {
         router.get("/analyse/:id").suspendingHandler(this::analyseSpotify)
         router.get("/search").suspendingHandler(AnalysisAPI::searchSpotify)
+        router.get("/loaded").suspendingHandler(this::listLoadedSongs)
         router.post("/upload/:id")
             .handler(BodyHandler.create().setDeleteUploadedFilesOnEnd(true).setBodyLimit(10 * 1000 * 1000))
         router.post("/upload/:id").suspendingHandler(this::upload)
+    }
+
+    private suspend fun listLoadedSongs(context: RoutingContext) {
+        val songs = mutableListOf<JsonObject>()
+        
+        // Get songs from ANALYSIS folder
+        val analysisFolder = File(
+            EternalJukebox.config.storageOptions["ANALYSIS_FOLDER"] as? String ?: "data/analysis"
+        )
+        if (analysisFolder.exists() && analysisFolder.isDirectory) {
+            analysisFolder.listFiles { file -> file.extension == "json" }?.forEach { file ->
+                try {
+                    val content = withContext(Dispatchers.IO) { file.readText() }
+                    val json = JsonObject(content)
+                    val info = json.getJsonObject("info")
+                    if (info != null) {
+                        songs.add(jsonObjectOf(
+                            "id" to (info.getString("id") ?: file.nameWithoutExtension),
+                            "title" to (info.getString("title") ?: info.getString("name") ?: "Unknown"),
+                            "artist" to (info.getString("artist") ?: "Unknown")
+                        ))
+                    }
+                } catch (e: Exception) {
+                    logger.debug("Failed to parse analysis file: ${file.name}", e)
+                }
+            }
+        }
+        
+        // Get songs from UPLOADED_ANALYSIS folder
+        val uploadedFolder = File(
+            EternalJukebox.config.storageOptions["UPLOADED_ANALYSIS_FOLDER"] as? String ?: "data/uploaded_analysis"
+        )
+        if (uploadedFolder.exists() && uploadedFolder.isDirectory) {
+            uploadedFolder.listFiles { file -> file.extension == "json" }?.forEach { file ->
+                try {
+                    val content = withContext(Dispatchers.IO) { file.readText() }
+                    val json = JsonObject(content)
+                    val info = json.getJsonObject("info")
+                    if (info != null) {
+                        val id = info.getString("id") ?: file.nameWithoutExtension
+                        // Avoid duplicates
+                        if (songs.none { it.getString("id") == id }) {
+                            songs.add(jsonObjectOf(
+                                "id" to id,
+                                "title" to (info.getString("title") ?: info.getString("name") ?: "Unknown"),
+                                "artist" to (info.getString("artist") ?: "Unknown")
+                            ))
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.debug("Failed to parse uploaded analysis file: ${file.name}", e)
+                }
+            }
+        }
+        
+        // Sort by title
+        songs.sortBy { it.getString("title")?.lowercase() ?: "" }
+        
+        context.response()
+            .putHeader("X-Client-UID", context.clientInfo.userUID)
+            .putHeader("Content-Type", "application/json")
+            .end(JsonArray(songs))
     }
 
     private suspend fun analyseSpotify(context: RoutingContext) {

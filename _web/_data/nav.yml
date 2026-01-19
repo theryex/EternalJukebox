@@ -21,7 +21,11 @@ bar:
     id: show-main
     canonizer: canonizer_index.html
     jukebox: jukebox_index.html
-  - title: Pick a song
+  - title: Loaded Songs
+    id: show-loaded
+    canonizer: canonizer_search.html
+    jukebox: jukebox_loaded.html
+  - title: Search Songs
     id: show-loader
     canonizer: canonizer_search.html
     jukebox: jukebox_search.html

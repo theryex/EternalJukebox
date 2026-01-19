@@ -1,11 +1,47 @@
 # EternalJukebox
 
-This repository is a fork which fixes bugs because the upstream repo is unmaintained.
+This repository is a fork of [floriegl's EternalJukebox](https://github.com/floriegl/EternalJukebox), customized by Ryex for use with the Floppa Analyzer.
 
-You can visit the hosted instance of this repository [here](https://eternalbox.floriegl.tech), in case you want to mess around with it without doing all the hard stuff.
+You can visit the hosted instance of this fork at [Ryex's website](https://www.ryex.xyz).
 
 The source files for the EternalJukebox, a rehosting of the Infinite Jukebox.
 This repo contains everything you need to host the EternalJukebox on your own server!
+
+## 🎷 Ryex's Fork Customizations
+
+This fork includes the following enhancements:
+
+### Floppa Analyzer Integration
+
+Instead of relying on the deprecated Spotify Audio Analysis API (which required a bookmarklet workaround), this instance uses the **Floppa Analyzer** - a custom GPU-accelerated audio analysis service. When a song isn't found in the database, the analyzer automatically processes the track using:
+
+- **librosa** for beat detection and rhythm analysis
+- **nnAudio** with CUDA acceleration for spectral feature extraction
+- Custom algorithms for segment detection and structural analysis
+
+The analyzer is hosted at `https://www.ryex.xyz/tools/analyze` and provides real-time progress updates during processing.
+
+### Dual Song Picker Tabs
+
+- **Loaded Songs**: Browse songs that have already been analyzed and are available in the system
+- **Search Songs**: Search for new songs to analyze (uses Spotify search API)
+
+### Analyzer Reference Files
+
+The `/analyzer/` directory contains the source code for the Floppa Analyzer service:
+- `api.py` - FastAPI endpoints for analysis requests and status polling
+- `app.py` - Streamlit web interface for manual analysis
+- `analyzer.py` - GPU-accelerated audio analysis engine
+- `grabber.py` - Audio acquisition from various sources
+
+## Credits
+
+- **Paul Lamere** ([@plamere](https://twitter.com/plamere)) - Original creator of The Infinite Jukebox at Music Hack Day @ MIT
+- **floriegl** ([GitHub](https://github.com/floriegl)) - Maintainer of the EternalJukebox fork and Docker setup
+- **Claude** (Anthropic) - AI assistance for this customization
+
+---
+
 
 # Docker Install
 

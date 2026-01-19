@@ -67,6 +67,8 @@ config.json
 
 # docker-compose environment
 .env
+env
+analyzer/.env
 
 build/
 bin/

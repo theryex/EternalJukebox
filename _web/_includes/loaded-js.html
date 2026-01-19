@@ -1,0 +1,84 @@
+<script type="text/javascript">
+
+    var allLoadedSongs = [];
+
+    function listLoadedSong(song) {
+        var title = song.title;
+        if (song.artist && song.artist !== '(unknown artist)') {
+            title = song.title + ' by ' + song.artist;
+        }
+
+        var item = $('<a>').text(title);
+        item.attr('class', 'song-link');
+        item.attr('role', 'listitem');
+        item.attr('href', 'jukebox_go.html?id=' + song.id);
+        return item;
+    }
+
+    function displaySongs(songs) {
+        var listElem = '#loaded-list';
+        $(listElem).empty();
+
+        if (songs.length === 0) {
+            $(listElem).append($('<p>').text('No songs found.'));
+            return;
+        }
+
+        for (var i = 0; i < songs.length; i++) {
+            var item = listLoadedSong(songs[i]);
+            if (item) {
+                $(listElem).append(item);
+            }
+        }
+    }
+
+    function filterSongs() {
+        var filterText = $('#filter').val().toLowerCase();
+
+        if (filterText.length === 0) {
+            displaySongs(allLoadedSongs);
+            return;
+        }
+
+        var filtered = allLoadedSongs.filter(function (song) {
+            var searchable = (song.title + ' ' + song.artist).toLowerCase();
+            return searchable.indexOf(filterText) >= 0;
+        });
+
+        displaySongs(filtered);
+    }
+
+    function fetchLoadedSongs() {
+        $.ajax({
+            url: '/api/analysis/loaded',
+            dataType: 'json',
+            type: 'GET',
+            success: function (data) {
+                allLoadedSongs = data;
+                displaySongs(allLoadedSongs);
+            },
+            error: function (xhr, textStatus, error) {
+                $('#loaded-list').empty();
+                $('#loaded-list').append($('<p>').text('Error loading songs. Please try again later.'));
+                console.log('Error fetching loaded songs:', error);
+            }
+        });
+    }
+
+    function init() {
+        fetchLoadedSongs();
+
+        $('#filter').on('input', function () {
+            filterSongs();
+        });
+
+        $('#filter').keyup(function (e) {
+            if (e.keyCode == 13) {
+                filterSongs();
+            }
+        });
+    }
+
+    window.onload = init;
+
+</script>

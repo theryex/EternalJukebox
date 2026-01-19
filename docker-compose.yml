@@ -4,32 +4,51 @@ services:
     build: .
     image: eternaljukebox
     restart: always
-    #networks:
-    #  - internal
     ports:
-      - 8080:8080
+      - 8082:8080
     env_file:
       - .env
     volumes:
       - './envvar_config.yaml:/EternalJukebox/envvar_config.yaml'
       - './data:/EternalJukebox/data'
-      - './database/eternal_jukebox.mv.db:/EternalJukebox/eternal_jukebox.mv.db' #used for H2 db. Needs to copied from /database/eternal_jukebox.mv.db.init
-    # depends_on:
-    #   - db
+      - './database/eternal_jukebox.mv.db:/EternalJukebox/eternal_jukebox.mv.db'
+    depends_on:
+      floppa-analyzer:
+        condition: service_healthy
 
-  #db:
-  #  image: mysql
-  #  #restart: always
-  #  volumes:
-  #    - ./database:/var/lib/mysql
-  #  networks:
-  #    - internal
-  #  command: --default-authentication-plugin=mysql_native_password
-  #  environment:
-  #    MYSQL_ROOT_PASSWORD: ${SQL_PASSWORD}
-  #    MYSQL_DATABASE: ${SQL_DATABASE_NAME}
-  #    MYSQL_USER: ${SQL_USERNAME}
-  #    MYSQL_PASSWORD: ${SQL_PASSWORD}
+  floppa-analyzer:
+    build: ./analyzer
+    image: floppa-analyzer
+    restart: always
+    ports:
+      - 6874:6874
+    env_file:
+      - ./analyzer/.env
+    volumes:
+      # Share the data directories with the main service
+      - './data/uploaded_analysis:/data/uploaded_analysis'
+      - './data/audio:/data/audio'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6874/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-#networks:
-#  internal:
+  db:
+    image: mysql
+    #restart: always
+    volumes:
+      - ./database:/var/lib/mysql
+    networks:
+      - internal
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SQL_PASSWORD}
+      MYSQL_DATABASE: ${SQL_DATABASE_NAME}
+      MYSQL_USER: ${SQL_USERNAME}
+      MYSQL_PASSWORD: ${SQL_PASSWORD}
+
+networks:
+  internal:
+

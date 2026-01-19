@@ -1,0 +1,20 @@
+# Web Interface
+streamlit
+
+# Audio Processing & DSP
+librosa
+numpy
+ffmpeg-python
+numba
+torch
+nnAudio
+scipy
+
+# Data & Source Fetching
+spotipy
+yt-dlp
+python-dotenv
+
+#API
+uvicorn
+fastapi

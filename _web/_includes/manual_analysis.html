@@ -1,118 +1,212 @@
 <div id="manual-analysis" style="display: none;">
-    <h1>How to Use the Spotify Analysis Downloader</h1>
+    <h2>🎷 Floppa Analyzer</h2>
 
-    <p>
-        The Spotify Analysis Downloader lets you download analysis data for the track currently playing on Spotify and any track changes until you close or reload the tab. It only works on desktop browsers. If you want to listen to the song on mobile, upload the analysis from a desktop browser first. Follow these steps to use it:
-    </p>
-
-    <ol>
-        <li>
-            <strong>Show your bookmarks bar:</strong>
-            <ul>
-                <li><strong>Chrome:</strong> Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> (Windows) or <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> (Mac) to toggle the bookmark bar.</li>
-                <li><strong>Firefox:</strong> Click the menu button and select <strong>Library</strong>, then <strong>Bookmarks</strong>, and <strong>Bookmarking Tools</strong>, and select <strong>Show Bookmarks Toolbar</strong>.</li>
-                <li><strong>Edge:</strong> Press <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> or go to <strong>Settings</strong> &gt; <strong>Appearance</strong> &gt; <strong>Show favorites bar</strong> and set to <strong>Always</strong>.</li>
-                <li><strong>Safari:</strong> Go to <strong>View</strong> in the top menu and select <strong>Show Favorites Bar</strong>.</li>
-            </ul>
-        </li>
-        <li>
-            <strong>Bookmark the following link:</strong>
-            Drag this button to your bookmark bar to save it as a bookmark:
-            <a href="javascript:(() => { {% include manual-analysis-script.js %} })();" class="btn btn-small btn-default">Spotify Analysis Downloader</a>
-        </li>
-        <li>
-            <strong>Open Spotify:</strong>
-            Use this link to open Spotify in your browser and log in (Premium account not required):
-            <a href="https://open.spotify.com" target="_blank" class="btn btn-small btn-default">Open Spotify</a> <a id="current-song-link" target="_blank" class="btn btn-small btn-default" style="display: none;">Open current song in Spotify</a>
-        </li>
-        <li>
-            <strong>Play a Spotify track:</strong>
-            Start any track on Spotify to begin downloading analysis data for it. Pausing or muting the track will not impact the downloader.
-        </li>
-        <li>
-            <strong>Use the bookmarklet:</strong>
-            While the song is playing, click the "Spotify Analysis Downloader" bookmarklet from your bookmark bar. This action will download the analysis file for the current track.
-        </li>
-        <li>
-            <strong>Continue listening:</strong>
-            The downloader will automatically save analysis data for each new track you play until you close or reload the tab.
-        </li>
-        <li>
-            <strong>Locate your downloads:</strong>
-            The downloaded files will be in your downloads folder and named after the track IDs (e.g., `03UrZgTINDqvnUMbbIMhql.json`).
-        </li>
-        <li>
-            <strong>Upload the analysis file:</strong>
-            Match the filename with the track ID of the song you tried to play (see the URL) and use the form below to upload the analysis file for processing.
-        </li>
-    </ol>
-
-    <h2>Upload the Analysis File</h2>
-    <p>Select the JSON file you downloaded that corresponds to the song you tried to play on The Eternal Jukebox:</p>
-
-    <div class="l-cb" id="l-analysis-upload">
-        <form id="analysis-upload-form">
-            <input id="analysis-upload" type="file" name="song_upload" accept=".json">
-        </form>
-        <div class='progress_outer' id="analysis-progress" style="background-color: green; max-width: 300px;">
-            <div id='_progress' class='progress'></div>
+    <div id="floppa-status">
+        <p id="floppa-message">Preparing to analyze this track...</p>
+        <div class='progress_outer' id="floppa-progress-container"
+            style="background-color: #333; max-width: 400px; height: 24px; border-radius: 4px; overflow: hidden;">
+            <div id='floppa-progress'
+                style="background-color: #4CAF50; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
         </div>
+        <p id="floppa-log" style="color: #888; font-size: 0.9em;"></p>
+    </div>
+
+    <div id="floppa-error" style="display: none;">
+        <p style="color: #f44336;">Analysis failed. You can try the manual upload below:</p>
+    </div>
+
+    <div id="manual-upload-section"
+        style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #444;">
+        <h3>Manual Upload (Fallback)</h3>
+        <p>If automatic analysis fails, you can manually provide the analysis file:</p>
+
+        <ol>
+            <li>
+                <strong>Open Spotify:</strong>
+                <a href="https://open.spotify.com" target="_blank" class="btn btn-small btn-default">Open Spotify</a>
+                <a id="current-song-link" target="_blank" class="btn btn-small btn-default" style="display: none;">Open
+                    current song in Spotify</a>
+            </li>
+            <li>
+                <strong>Use the bookmarklet:</strong>
+                Drag this to your bookmarks bar:
+                <a href="javascript:(() => { {% include manual-analysis-script.js %} })();"
+                    class="btn btn-small btn-default">Spotify Analysis Downloader</a>
+            </li>
+            <li>
+                <strong>Upload the file:</strong>
+                <form id="analysis-upload-form">
+                    <input id="analysis-upload" type="file" name="song_upload" accept=".json">
+                </form>
+            </li>
+        </ol>
     </div>
 
     <script>
-        var params = {};
-        var q = document.URL.split('?')[1];
-        if (q !== undefined) {
-            q = q.split('&');
-            for (var i = 0; i < q.length; i++) {
-                var pv = q[i].split('=');
-                var p = pv[0];
-                var v = pv[1];
-                params[p] = v;
+        // Analyzer URL - uses local docker service if on same host, otherwise external
+        // The analyzer runs on port 6874 in the docker-compose stack
+        var floppaAnalyzerUrl = (function () {
+            // If we're running locally (docker-compose), use the local analyzer
+            // Otherwise fall back to the external URL
+            var hostname = window.location.hostname;
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return 'http://localhost:6874';
+            }
+            // For production, use the same hostname but different port
+            // This works when both services are exposed on the same server
+            return window.location.protocol + '//' + hostname + ':6874';
+        })();
+
+        var currentTaskId = null;
+        var pollInterval = null;
+
+        function getSpotifyIdFromUrl() {
+            var params = {};
+            var q = document.URL.split('?')[1];
+            if (q !== undefined) {
+                q = q.split('&');
+                for (var i = 0; i < q.length; i++) {
+                    var pv = q[i].split('=');
+                    if (pv.length === 2) {
+                        params[pv[0]] = pv[1];
+                    }
+                }
+            }
+            return params['id'] || null;
+        }
+
+        function updateFloppaStatus(message, progress, log) {
+            if (message) {
+                $('#floppa-message').text(message);
+            }
+            if (progress !== undefined && progress !== null) {
+                $('#floppa-progress').css('width', progress + '%');
+            }
+            if (log) {
+                $('#floppa-log').text(log);
             }
         }
 
-        if ('id' in params) {
-            $("#current-song-link").attr("href", "https://open.spotify.com/track/" + params['id']);
-            $("#current-song-link").show();
-        }
-
-        $("#analysis-upload").change(function () {
-            if (!'id' in params) {
-                $("#error").text("You must be on a song page to upload analysis data.");
-                $("#error").show();
-                return;
-            }
-            var id = params['id'];
-
-            if ($("#analysis-upload")[0].files[0].name.split('.')[0] !== id) {
-                $("#error").text("This is not the correct analysis file for this song. The correct file should be called " + id + ".json.");
-                $("#error").show();
+        function startFloppaAnalysis() {
+            var trackId = getSpotifyIdFromUrl();
+            if (!trackId) {
+                showFloppaError('No track ID found in URL');
                 return;
             }
 
-            $("#error").hide();
+            var spotifyUrl = 'https://open.spotify.com/track/' + trackId;
+
+            updateFloppaStatus('Sending track to Floppa Analyzer...', 5, 'Connecting to analysis server...');
 
             $.ajax({
-                url: "/api/analysis/upload/" + id,
+                url: floppaAnalyzerUrl + '/analyze/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ url: spotifyUrl }),
+                success: function (response) {
+                    if (response.task_id) {
+                        currentTaskId = response.task_id;
+                        updateFloppaStatus('Analysis started!', 10, response.meta ? 'Processing: ' + response.meta.title : 'Processing...');
+                        startPolling();
+                    } else {
+                        showFloppaError('Invalid response from analyzer');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showFloppaError('Failed to start analysis: ' + error);
+                }
+            });
+        }
+
+        function startPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+
+            pollInterval = setInterval(function () {
+                if (!currentTaskId) return;
+
+                $.ajax({
+                    url: floppaAnalyzerUrl + '/analyze/status/' + currentTaskId,
+                    type: 'GET',
+                    success: function (response) {
+                        updateFloppaStatus(null, response.progress, response.log);
+
+                        if (response.status === 'completed') {
+                            clearInterval(pollInterval);
+                            updateFloppaStatus('Analysis complete! Reloading...', 100, 'Success!');
+                            setTimeout(function () {
+                                window.location.reload(true);
+                            }, 1500);
+                        } else if (response.status === 'error') {
+                            clearInterval(pollInterval);
+                            showFloppaError(response.log || 'Analysis failed');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Don't stop polling on network errors, just log
+                        console.log('Polling error:', error);
+                    }
+                });
+            }, 2000);
+        }
+
+        function showFloppaError(message) {
+            $('#floppa-message').text('Analysis failed');
+            $('#floppa-log').text(message);
+            $('#floppa-progress').css('background-color', '#f44336');
+            $('#floppa-error').show();
+            $('#manual-upload-section').show();
+        }
+
+        // Initialize when manual-analysis div is shown
+        $(document).ready(function () {
+            var observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        var target = $(mutation.target);
+                        if (target.attr('id') === 'manual-analysis' && target.is(':visible')) {
+                            startFloppaAnalysis();
+                            observer.disconnect();
+                        }
+                    }
+                });
+            });
+
+            observer.observe(document.getElementById('manual-analysis'), {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+
+            // Setup current song link
+            var trackId = getSpotifyIdFromUrl();
+            if (trackId) {
+                $('#current-song-link').attr('href', 'https://open.spotify.com/track/' + trackId).show();
+            }
+        });
+
+        // Manual upload handler
+        $("#analysis-upload").change(function () {
+            var trackId = getSpotifyIdFromUrl();
+            if (!trackId) {
+                $("#floppa-log").text("No track ID found in URL");
+                return;
+            }
+
+            var fileName = $(this)[0].files[0].name.split('.')[0];
+            if (fileName !== trackId) {
+                $("#floppa-log").text("Wrong file. Expected: " + trackId + ".json");
+                return;
+            }
+
+            $.ajax({
+                url: "/api/analysis/upload/" + trackId,
                 type: "POST",
                 data: new FormData($('#analysis-upload-form')[0]),
                 processData: false,
                 contentType: false,
                 headers: {
                     "X-XSRF-TOKEN": document.cookie.substring(document.cookie.indexOf("XSRF-TOKEN")).split(";")[0].split("=").slice(1).join("=")
-                },
-                xhr: function () {
-                    var xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener("progress", function (evt) {
-                        if (evt.lengthComputable) {
-                            var percentComplete = evt.loaded / evt.total;
-                            percentComplete = percentComplete * 100;
-                            $('#analysis-progress').text(percentComplete + '%');
-                            $('#analysis-progress').css('width', percentComplete + '%');
-                        }
-                    }, false);
-                    return xhr;
                 },
                 success: function () {
                     window.location.reload(true);
@@ -121,8 +215,7 @@
                     if (xhr.responseJSON && typeof xhr.responseJSON.error === "string") {
                         error = xhr.responseJSON.error;
                     }
-                    $("#error").text("Sorry, could not upload analysis data: " + error);
-                    $("#error").show();
+                    $("#floppa-log").text("Upload failed: " + error);
                 }
             });
         });
