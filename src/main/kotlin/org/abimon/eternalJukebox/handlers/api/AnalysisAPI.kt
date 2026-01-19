@@ -289,7 +289,13 @@ object AnalysisAPI : IAPI {
                     // Analysis is done and saved to disk.
                     // The Jukebox shares the volume, so we can now try to load it from UPLOADED_ANALYSIS storage type.
                     if (EternalJukebox.storage.isStored("$id.json", EnumStorageType.UPLOADED_ANALYSIS)) {
-                        return EternalJukebox.storage.provide("$id.json", EnumStorageType.UPLOADED_ANALYSIS, clientInfo)
+                        val dataSource =
+                            EternalJukebox.storage.provide("$id.json", EnumStorageType.UPLOADED_ANALYSIS, clientInfo)
+                        return dataSource?.let {
+                            withContext(Dispatchers.IO) {
+                                String(it.inputStream.readBytes(), Charsets.UTF_8)
+                            }
+                        }
                     }
                     // If not found yet, wait a bit more?
                 } else if (status == "error") {
