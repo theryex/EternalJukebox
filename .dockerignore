@@ -6,3 +6,6 @@ data
 
 # ignore markdown files
 *.md
+
+# ignore backup directories
+analyzer-backup/
