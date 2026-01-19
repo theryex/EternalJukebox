@@ -1,4 +1,3 @@
-version: '3'
 services:
   main:
     build: .
@@ -12,6 +11,8 @@ services:
       - './envvar_config.yaml:/EternalJukebox/envvar_config.yaml'
       - './data:/EternalJukebox/data'
       - './database/eternal_jukebox.mv.db:/EternalJukebox/eternal_jukebox.mv.db'
+    networks:
+      - internal
     depends_on:
       floppa-analyzer:
         condition: service_healthy
@@ -28,6 +29,8 @@ services:
       # Share the data directories with the main service
       - './data/uploaded_analysis:/data/uploaded_analysis'
       - './data/audio:/data/audio'
+    networks:
+      - internal
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:6874/docs"]
       interval: 30s
@@ -37,7 +40,7 @@ services:
 
   db:
     image: mysql
-    #restart: always
+    restart: always
     volumes:
       - ./database:/var/lib/mysql
     networks:
@@ -51,4 +54,3 @@ services:
 
 networks:
   internal:
-

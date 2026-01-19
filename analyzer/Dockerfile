@@ -3,9 +3,13 @@
 
 FROM python:3.11-slim
 
+# Prevent apt from hanging on interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies (non-interactive)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     curl \
