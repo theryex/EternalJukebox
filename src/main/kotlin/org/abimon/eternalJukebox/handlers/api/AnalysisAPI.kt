@@ -279,10 +279,10 @@ object AnalysisAPI : IAPI {
                 delay(3000)
                 attempt++
 
-                val (_, statusRes, statusStr) = Fuel.get("$analyzerUrl/analyze/status/$id").awaitStringResponseResult()
+                val (_, statusRes, _) = Fuel.get("$analyzerUrl/analyze/status/$id").awaitStringResponseResult()
                 if (statusRes.statusCode != 200) continue
 
-                val statusJson = JsonObject(statusStr ?: "{}")
+                val statusJson = JsonObject(String(statusRes.data, Charsets.UTF_8))
                 val status = statusJson.getString("status")
 
                 if (status == "completed") {
