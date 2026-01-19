@@ -282,7 +282,7 @@ object AnalysisAPI : IAPI {
                 val (_, statusRes, statusStr) = Fuel.get("$analyzerUrl/analyze/status/$id").awaitStringResponseResult()
                 if (statusRes.statusCode != 200) continue
 
-                val statusJson = JsonObject(statusStr)
+                val statusJson = JsonObject(statusStr ?: "{}")
                 val status = statusJson.getString("status")
 
                 if (status == "completed") {
