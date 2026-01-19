@@ -10,6 +10,8 @@ data class JukeboxConfig(
         val spotifyClient: String? = null,
         val spotifySecret: String? = null,
 
+        val analyzerUrl: String? = null,
+
         val disable: Map<String, Boolean> = emptyMap(),
 
         val storageType: EnumStorageSystem = EnumStorageSystem.LOCAL,

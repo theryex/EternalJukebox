@@ -38,3 +38,6 @@ workerExecuteTime: 1200000000000
 #   username: ${SQL_USERNAME}
 #   password: ${SQL_PASSWORD}
 #   jdbcUrl: jdbc:${SQL_TYPE}://${SQL_HOST}:${SQL_PORT}/${SQL_DATABASE_NAME}?useSSL=false
+
+# External analyzer service URL (for auto-analysis when no cached analysis exists)
+analyzerUrl: ${ANALYZER_URL}

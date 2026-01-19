@@ -1,11 +1,14 @@
 package org.abimon.eternalJukebox.handlers.api
 
+import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.abimon.eternalJukebox.*
 import org.abimon.eternalJukebox.objects.*
@@ -122,6 +125,16 @@ object AnalysisAPI : IAPI {
                     if (data != null)
                         return context.response().putHeader("X-Client-UID", context.clientInfo.userUID)
                             .end(data, "application/json")
+                }
+
+                val info = EternalJukebox.spotify.getInfo(id, context.clientInfo)
+                if (info != null && EternalJukebox.config.analyzerUrl != null) {
+                    val result = requestAnalysisFromFloppa(info.url, id, context.clientInfo)
+                    if (result != null) {
+                        return context.response()
+                            .putHeader("X-Client-UID", context.clientInfo.userUID)
+                            .end(result, "application/json")
+                    }
                 }
 
                 return context.response().putHeader("X-Client-UID", context.clientInfo.userUID).setStatusCode(400).end(
@@ -244,6 +257,52 @@ object AnalysisAPI : IAPI {
         }
     }
 
+
+    private suspend fun requestAnalysisFromFloppa(url: String, id: String, clientInfo: ClientInfo?): String? {
+        val analyzerUrl = EternalJukebox.config.analyzerUrl ?: return null
+
+        try {
+            // 1. Submit analysis request
+            val (_, response, _) = Fuel.post("$analyzerUrl/analyze/")
+                .header("Content-Type", "application/json")
+                .body(JsonObject().put("url", url).toString())
+                .awaitStringResponseResult()
+
+            if (response.statusCode != 200) {
+                logger.warn("[{}] Failed to request analysis from Floppa: {}", clientInfo?.userUID, response.statusCode)
+                return null
+            }
+
+            // 2. Poll for completion
+            var attempt = 0
+            while (attempt < 60) { // Timeout after ~3 minutes (60 * 3s)
+                delay(3000)
+                attempt++
+
+                val (_, statusRes, statusStr) = Fuel.get("$analyzerUrl/analyze/status/$id").awaitStringResponseResult()
+                if (statusRes.statusCode != 200) continue
+
+                val statusJson = JsonObject(statusStr)
+                val status = statusJson.getString("status")
+
+                if (status == "completed") {
+                    // Analysis is done and saved to disk.
+                    // The Jukebox shares the volume, so we can now try to load it from UPLOADED_ANALYSIS storage type.
+                    if (EternalJukebox.storage.isStored("$id.json", EnumStorageType.UPLOADED_ANALYSIS)) {
+                        return EternalJukebox.storage.provide("$id.json", EnumStorageType.UPLOADED_ANALYSIS, clientInfo)
+                    }
+                    // If not found yet, wait a bit more?
+                } else if (status == "error") {
+                    logger.warn("[{}] Floppa analysis failed: {}", clientInfo?.userUID, statusJson.getString("log"))
+                    return null
+                }
+            }
+        } catch (e: Exception) {
+            logger.error("[{}] Error communicating with Floppa Analyzer", clientInfo?.userUID, e)
+        }
+
+        return null
+    }
 
     init {
         logger.info("Initialised Analysis Api")
