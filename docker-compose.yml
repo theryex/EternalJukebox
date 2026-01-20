@@ -13,6 +13,7 @@ services:
       - './database/eternal_jukebox.mv.db:/EternalJukebox/eternal_jukebox.mv.db'
     networks:
       - internal
+      - n8n-ollama-agents_bridge
     depends_on:
       floppa-analyzer:
         condition: service_healthy
@@ -38,17 +39,7 @@ services:
       retries: 3
       start_period: 30s
 
-  db:
-    image: postgres:15-alpine
-    restart: always
-    volumes:
-      - ./database:/var/lib/postgresql/data
-    networks:
-      - internal
-    environment:
-      POSTGRES_USER: ${SQL_USERNAME}
-      POSTGRES_PASSWORD: ${SQL_PASSWORD}
-      POSTGRES_DB: ${SQL_DATABASE_NAME}
-
 networks:
   internal:
+  n8n-ollama-agents_bridge:
+    external: true
