@@ -165,20 +165,10 @@ abstract class HikariDatabase : IDatabase, CoroutineScope {
 
         return@coroutineScope cachedValue.await()
     }
+}
 
     override fun makeSongPopular(service: String, id: String, clientInfo: ClientInfo?) {
-//        use { connection ->
-//            val insertUpdate =
-//                connection.prepareStatement("INSERT INTO popular (song_id, service, hits) VALUES(?, ?, 1) ON DUPLICATE KEY UPDATE hits = hits + 1")
-//
-//            insertUpdate.setString(1, id)
-//            insertUpdate.setString(2, service)
-//            insertUpdate.execute()
-//
-//            Unit
-//        }
-
-        GlobalScope.launch(dispatcher) { popularUpdates[service]?.send(id) }
+        launch(dispatcher) { popularUpdates[service]?.send(id) }
     }
 
     override suspend fun provideShortURL(params: Array<String>, clientInfo: ClientInfo?): String {
