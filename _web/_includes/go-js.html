@@ -238,7 +238,7 @@
         if (title == null || title.length === 0 || title === '(unknown title)' || title === 'undefined') {
             title = "Unknown Title";
         } else if (artist !== '(unknown artist)') {
-                title = title + ' by ' + artist;
+            title = title + ' by ' + artist;
         }
         return title;
     }
@@ -314,8 +314,9 @@
     }
 
     function fetchAnalysis(id) {
-        var url = '/api/analysis/analyse/' + id;
-        info('Fetching the analysis');
+        // First, try to get cached analysis from local storage
+        var url = '/api/analysis/' + id;
+        info('Checking for cached analysis...');
 
         $.ajax({
             url: url,
@@ -325,20 +326,13 @@
             success: function (data) {
                 gotTheAnalysis(data);
             },
-            error: function(xhr, textStatus, error) {
-                if (xhr.responseJSON) {
-                    if (typeof xhr.responseJSON.error === "string") {
-                        error = xhr.responseJSON.error;
-                    }
-                    if (xhr.responseJSON.show_manual_analysis_info) {
-                        $("#manual-analysis").show();
-                        // Auto-start Floppa analysis
-                        if (typeof startFloppaAnalysis === 'function') {
-                            startFloppaAnalysis();
-                        }
-                    }
+            error: function (xhr, textStatus, error) {
+                // No cached analysis - trigger Floppa analyzer directly
+                info('No cached analysis. Starting Floppa Analyzer...');
+                $("#manual-analysis").show();
+                if (typeof startFloppaAnalysis === 'function') {
+                    startFloppaAnalysis();
                 }
-                info("Sorry, can't find info for that track: " + error)
             }
         });
     }
@@ -914,9 +908,9 @@
         normalColor: "#5f9",
 
         move: function (x, y) {
-            this.rect.attr({x: x, y: y});
+            this.rect.attr({ x: x, y: y });
             if (this.label) {
-                this.label.attr({x: x + 2, y: y + 8});
+                this.label.attr({ x: x + 2, y: y + 8 });
             }
         },
 
@@ -1261,7 +1255,7 @@
                 width: 350,
                 position: [4, 4],
                 resizable: false,
-                close: function() {
+                close: function () {
                     jukeboxData.tuningOpen = false;
                 }
             }
@@ -1274,7 +1268,7 @@
         );
 
         $("#close-tune").click(
-            function() {
+            function () {
                 var controls = $("#controls");
                 controls.dialog('close');
             }
@@ -1317,72 +1311,72 @@
         );
 
         $("#threshold-slider").slider({
-                max: 80,
-                min: 2,
-                step: 1,
-                value: 30,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.currentThreshold = ui.value;
-                        drawVisualization();
-                    }
-                },
-
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.currentThreshold = ui.value;
-                    }
+            max: 80,
+            min: 2,
+            step: 1,
+            value: 30,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.currentThreshold = ui.value;
+                    drawVisualization();
                 }
+            },
 
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.currentThreshold = ui.value;
+                }
             }
+
+        }
         );
 
         $("#probability-slider").slider({
-                max: 100,
-                min: 0,
-                range: true,
-                step: 1,
-                values: [
-                    Math.round(defaultMinRandomBranchChance * 100),
-                    Math.round(defaultMaxRandomBranchChance * 100)
-                ],
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
-                        setTunedURL();
-                    }
-                },
+            max: 100,
+            min: 0,
+            range: true,
+            step: 1,
+            values: [
+                Math.round(defaultMinRandomBranchChance * 100),
+                Math.round(defaultMaxRandomBranchChance * 100)
+            ],
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
+                    setTunedURL();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
                 }
             }
+        }
         );
 
         $("#probability-ramp-slider").slider({
-                max: 100,
-                min: 0,
-                step: 2,
-                value: 30,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.randomBranchChanceDelta =
-                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
-                        setTunedURL();
-                    }
-                },
+            max: 100,
+            min: 0,
+            step: 2,
+            value: 30,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.randomBranchChanceDelta =
+                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
+                    setTunedURL();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.randomBranchChanceDelta =
-                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.randomBranchChanceDelta =
+                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
                 }
             }
+        }
         );
 
         $("#audio-url").keypress(function (event) {
@@ -1395,26 +1389,26 @@
         });
 
         $("#audio-offset-slider").slider({
-                max: 20,
-                min: -10,
-                step: 0.1,
-                value: 0,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.audioOffset = ui.value;
-                        setTrackOffset();
-                    }
-                },
+            max: 20,
+            min: -10,
+            step: 0.1,
+            value: 0,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.audioOffset = ui.value;
+                    setTrackOffset();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.audioOffset = ui.value;
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.audioOffset = ui.value;
                 }
             }
+        }
         );
 
-        $("#audio-offset").change(function(event){
+        $("#audio-offset").change(function (event) {
             jukeboxData.audioOffset = event.target.valueAsNumber;
         }).keypress(function (event) {
             var keycode = event.keyCode || event.which;
@@ -1422,7 +1416,7 @@
                 jukeboxData.audioOffset = event.target.valueAsNumber;
                 setTrackOffset();
             }
-        }).blur(function(event){
+        }).blur(function (event) {
             jukeboxData.audioOffset = event.target.valueAsNumber;
             setTrackOffset();
         });
@@ -1474,7 +1468,7 @@
             max: 100,
             value: 50,
             range: "min",
-            slide: function(event, ui) {
+            slide: function (event, ui) {
                 $("#volume").text(ui.value);
                 player.audioGain.gain.value = ui.value / 100;
                 //setVolume(ui.value / 100);
@@ -2262,7 +2256,7 @@
             success: function (data) {
                 gotTheAnalysis(data);
             },
-            error: function(xhr, textStatus, error) {
+            error: function (xhr, textStatus, error) {
                 if (xhr.responseJSON) {
                     if (typeof xhr.responseJSON.error === "string") {
                         error = xhr.responseJSON.error;
@@ -2387,7 +2381,7 @@
                 width: 385,
                 position: [4, 4],
                 resizable: false,
-                close: function() {
+                close: function () {
                     canonizerData.tuningOpen = false;
                 }
             }
@@ -2738,13 +2732,13 @@
         }
         var TW = W - hPad;
         var x = hPad + TW * q.start / trackDuration - cursorWidth / 2;
-        masterCursor.attr({x: x});
+        masterCursor.attr({ x: x });
 
         var ox = hPad + TW * q.other.start / trackDuration - cursorWidth / 2;
         if (q.ppath) {
             moveAlong(otherCursor, q.ppath, q.other.duration * .75);
         } else {
-            otherCursor.attr({x: ox});
+            otherCursor.attr({ x: ox });
         }
     }
 
@@ -2758,12 +2752,12 @@
         function animate() {
             var coords = path.getPointAtLength(curStep / steps * plength);
             if (curStep++ < steps) {
-                rect.attr({x: coords.x, y: coords.y});
+                rect.attr({ x: coords.x, y: coords.y });
                 setTimeout(function () {
                     animate();
                 }, frame * 1000);
             } else {
-                rect.attr({y: oy});
+                rect.attr({ y: oy });
             }
         }
 
@@ -2801,8 +2795,8 @@
             return q.loudness_max;
         } else if (q.overlappingSegments.length > 0) {
             _.each(q.overlappingSegments, function (seg, i) {
-                    sum += seg.loudness_max;
-                }
+                sum += seg.loudness_max;
+            }
             );
             return sum / q.overlappingSegments.length;
         } else {
@@ -2823,20 +2817,20 @@
         var maxV = -60;
 
         _.each(qlist, function (q, j) {
-                var vol = average_volume(q);
-                q.raw_volume = vol;
-                if (vol > maxV) {
-                    maxV = vol;
-                }
-                if (vol < minV) {
-                    minV = vol;
-                }
+            var vol = average_volume(q);
+            q.raw_volume = vol;
+            if (vol > maxV) {
+                maxV = vol;
             }
+            if (vol < minV) {
+                minV = vol;
+            }
+        }
         );
 
         _.each(qlist, function (q, j) {
-                q.volume = interp(q.raw_volume, minV, maxV);
-            }
+            q.volume = interp(q.raw_volume, minV, maxV);
+        }
         );
         calcWindowMedian(qlist, 'volume', 'median_volume', 20);
     }

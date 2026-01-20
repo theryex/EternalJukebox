@@ -43,19 +43,36 @@
     </div>
 
     <script>
-        // Analyzer URL - uses local docker service if on same host, otherwise external
-        // The analyzer runs on port 6874 in the docker-compose stack
-        var floppaAnalyzerUrl = (function () {
-            // If we're running locally (docker-compose), use the local analyzer
-            // Otherwise fall back to the external URL
+        // Analyzer URL - fetched from server config, with fallback
+        var floppaAnalyzerUrl = null;
+        var floppaConfigLoaded = false;
+
+        // Fetch config from server
+        $.ajax({
+            url: '/api/site/config',
+            type: 'GET',
+            async: false, // Synchronous to ensure URL is available before analysis starts
+            success: function (config) {
+                if (config.analyzerUrl) {
+                    floppaAnalyzerUrl = config.analyzerUrl;
+                }
+                floppaConfigLoaded = true;
+            },
+            error: function () {
+                console.log('Could not fetch config, using fallback analyzer URL');
+                floppaConfigLoaded = true;
+            }
+        });
+
+        // Fallback if config didn't provide URL
+        if (!floppaAnalyzerUrl) {
             var hostname = window.location.hostname;
             if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                return 'http://localhost:6874';
+                floppaAnalyzerUrl = 'http://localhost:6874';
+            } else {
+                floppaAnalyzerUrl = window.location.protocol + '//' + hostname + ':6874';
             }
-            // For production, use the same hostname but different port
-            // This works when both services are exposed on the same server
-            return window.location.protocol + '//' + hostname + ':6874';
-        })();
+        }
 
         var currentTaskId = null;
         var pollInterval = null;

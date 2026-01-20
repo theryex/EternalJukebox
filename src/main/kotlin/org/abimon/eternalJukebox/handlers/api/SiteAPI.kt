@@ -31,6 +31,7 @@ object SiteAPI: IAPI {
     override fun setup(router: Router) {
         router.get("/healthy").handler { it.response().end("Up for ${startupTime.timeDifference()}") }
         router.get("/usage").handler(SiteAPI::usage)
+        router.get("/config").handler(SiteAPI::config)
 
         router.post().handler(BodyHandler.create().setBodyLimit(1 * 1000 * 1000).setDeleteUploadedFilesOnEnd(true))
 
@@ -39,6 +40,16 @@ object SiteAPI: IAPI {
         router.post("/shrink").suspendingHandler(SiteAPI::shrink)
 
         router.get("/popular/:service").suspendingHandler(this::popular)
+    }
+
+    private fun config(context: RoutingContext) {
+        val configData = jsonObjectOf(
+            "analyzerUrl" to EternalJukebox.config.analyzerUrl
+        )
+        context.response()
+            .putHeader("Content-Type", "application/json")
+            .putHeader("X-Client-UID", context.clientInfo.userUID)
+            .end(configData)
     }
 
     private suspend fun popular(context: RoutingContext) {
