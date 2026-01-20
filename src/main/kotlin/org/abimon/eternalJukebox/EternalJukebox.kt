@@ -36,8 +36,17 @@ import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.jvm.jvmName
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 
-object EternalJukebox {
+object EternalJukebox : CoroutineScope {
+    private val logger: Logger = LoggerFactory.getLogger("EternalBox")
+
+    // `SupervisorJob` means this won't be canceled
+    override val coroutineContext = SupervisorJob() + CoroutineName("EternalJukebox") + LogCoroutineExceptionHandler(logger)
+
     val jsonMapper: ObjectMapper = ObjectMapper()
             .registerModules(Jdk8Module(), KotlinModule.Builder().build(), JavaTimeModule(), ParameterNamesModule())
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -69,8 +78,6 @@ object EternalJukebox {
     val analyticsProviders: List<IAnalyticsProvider>
 
     val database: IDatabase
-
-    private val logger: Logger = LoggerFactory.getLogger("EternalBox")
 
     private val schedule: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     private val apis = ArrayList<IAPI>()
