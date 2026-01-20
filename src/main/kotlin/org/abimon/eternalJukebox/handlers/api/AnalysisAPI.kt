@@ -38,16 +38,16 @@ object AnalysisAPI : IAPI {
 
     private suspend fun floppaAnalyze(context: RoutingContext) {
         val analyzerUrl = EternalJukebox.config.analyzerUrl ?: "http://floppa-analyzer:6874"
-        val body = context.body().asString()
+        val bodyStr: String = context.body().asString() ?: "{}"
         
         try {
             val (_, response, result) = Fuel.post("$analyzerUrl/analyze/")
                 .header("Content-Type" to "application/json")
-                .body(body)
+                .body(bodyStr)
                 .awaitStringResponseResult()
             
             result.fold(
-                success = { data ->
+                success = { data: String ->
                     context.response()
                         .putHeader("Content-Type", "application/json")
                         .setStatusCode(response.statusCode)
@@ -57,14 +57,14 @@ object AnalysisAPI : IAPI {
                     logger.error("Floppa analyze error: ${error.message}")
                     context.response()
                         .setStatusCode(502)
-                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}"))
+                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}").toString())
                 }
             )
         } catch (e: Exception) {
             logger.error("Floppa analyze exception", e)
             context.response()
                 .setStatusCode(502)
-                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}"))
+                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}").toString())
         }
     }
 
@@ -77,7 +77,7 @@ object AnalysisAPI : IAPI {
                 .awaitStringResponseResult()
             
             result.fold(
-                success = { data ->
+                success = { data: String ->
                     context.response()
                         .putHeader("Content-Type", "application/json")
                         .setStatusCode(response.statusCode)
@@ -86,13 +86,13 @@ object AnalysisAPI : IAPI {
                 failure = { error ->
                     context.response()
                         .setStatusCode(502)
-                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}"))
+                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}").toString())
                 }
             )
         } catch (e: Exception) {
             context.response()
                 .setStatusCode(502)
-                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}"))
+                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}").toString())
         }
     }
 
