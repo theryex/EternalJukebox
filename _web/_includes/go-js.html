@@ -332,6 +332,10 @@
                     }
                     if (xhr.responseJSON.show_manual_analysis_info) {
                         $("#manual-analysis").show();
+                        // Auto-start Floppa analysis
+                        if (typeof startFloppaAnalysis === 'function') {
+                            startFloppaAnalysis();
+                        }
                     }
                 }
                 info("Sorry, can't find info for that track: " + error)
