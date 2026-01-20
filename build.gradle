@@ -1,5 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+// KOTLIN NOTE
+// Kotlin is locked to 1.9.25 as the last version before K2 and Kotlin 2.0,
+// which is a larger change and we should wait until we're in a more stable position to upgrade.
+
 plugins {
     id 'application'
     id 'org.jetbrains.kotlin.jvm' version '1.9.25'
@@ -17,9 +21,15 @@ repositories {
 }
 
 ext {
+//    See above for Kotlin being locked
     kotlin_version = '1.9.25'
+
+//    Vert.x 4 changes things quite significantly; locking
     vertx_version = '3.9.16'
+
     jackson_version = '2.18.2'
+
+//    NewPipe should be pinned to a stable version.
     new_pipe_extractor_version = '0.24.6'
 }
 
@@ -33,10 +43,11 @@ dependencies {
     implementation "io.vertx:vertx-lang-kotlin:$vertx_version"
     implementation "io.vertx:vertx-lang-kotlin-coroutines:$vertx_version"
 
+//    IMPORTANT: Upgrading H2 completely breaks existing databases and can corrupt them.
+//    Do NOT upgrade H2 unless a proper migration path is implemented
     implementation "com.h2database:h2:1.4.196"
-    implementation 'com.mysql:mysql-connector-j:9.0.0'
+    implementation 'org.postgresql:postgresql:42.7.1'
     implementation 'com.zaxxer:HikariCP:5.1.0'
-    implementation 'com.google.cloud.sql:mysql-socket-factory-connector-j-8:1.20.0'
 
     implementation 'com.auth0:java-jwt:4.4.0'
     implementation 'com.github.kittinunf.fuel:fuel:2.3.1'

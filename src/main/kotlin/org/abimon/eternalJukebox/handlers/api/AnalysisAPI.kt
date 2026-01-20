@@ -127,19 +127,10 @@ object AnalysisAPI : IAPI {
                             .end(data, "application/json")
                 }
 
-                val info = EternalJukebox.spotify.getInfo(id, context.clientInfo)
-                if (info != null && EternalJukebox.config.analyzerUrl != null) {
-                    val result = requestAnalysisFromFloppa(info.url, id, context.clientInfo)
-                    if (result != null) {
-                        return context.response()
-                            .putHeader("X-Client-UID", context.clientInfo.userUID)
-                            .end(result, "application/json")
-                    }
-                }
-
+                // Let the frontend handle auto-analysis with progress bar
                 return context.response().putHeader("X-Client-UID", context.clientInfo.userUID).setStatusCode(400).end(
                     jsonObjectOf(
-                        "error" to "This track currently has no analysis data. Below is a tutorial on how to manually provide analysis data on Desktop.",
+                        "error" to "This track currently has no analysis data. Attempting to analyze...",
                         "show_manual_analysis_info" to true,
                         "client_uid" to context.clientInfo.userUID
                     )
