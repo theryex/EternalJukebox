@@ -44,7 +44,7 @@ object SiteAPI: IAPI {
 
     private fun config(context: RoutingContext) {
         val configData = jsonObjectOf(
-            "analyzerUrl" to EternalJukebox.config.analyzerUrl
+            "analyzerUrl" to (EternalJukebox.config.analyzerUrl ?: "")
         )
         context.response()
             .putHeader("Content-Type", "application/json")
