@@ -43,36 +43,8 @@
     </div>
 
     <script>
-        // Analyzer URL - fetched from server config, with fallback
-        var floppaAnalyzerUrl = null;
-        var floppaConfigLoaded = false;
-
-        // Fetch config from server
-        $.ajax({
-            url: '/api/site/config',
-            type: 'GET',
-            async: false, // Synchronous to ensure URL is available before analysis starts
-            success: function (config) {
-                if (config.analyzerUrl) {
-                    floppaAnalyzerUrl = config.analyzerUrl;
-                }
-                floppaConfigLoaded = true;
-            },
-            error: function () {
-                console.log('Could not fetch config, using fallback analyzer URL');
-                floppaConfigLoaded = true;
-            }
-        });
-
-        // Fallback if config didn't provide URL
-        if (!floppaAnalyzerUrl) {
-            var hostname = window.location.hostname;
-            if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                floppaAnalyzerUrl = 'http://localhost:6874';
-            } else {
-                floppaAnalyzerUrl = window.location.protocol + '//' + hostname + ':6874';
-            }
-        }
+        // Analyzer URL - uses server-side proxy to avoid CORS and external port issues
+        var floppaAnalyzerUrl = '/api/analysis/floppa';
 
         var currentTaskId = null;
         var pollInterval = null;
@@ -116,7 +88,7 @@
             updateFloppaStatus('Sending track to Floppa Analyzer...', 5, 'Connecting to analysis server...');
 
             $.ajax({
-                url: floppaAnalyzerUrl + '/analyze/',
+                url: floppaAnalyzerUrl + '/analyze',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ url: spotifyUrl }),
@@ -144,7 +116,7 @@
                 if (!currentTaskId) return;
 
                 $.ajax({
-                    url: floppaAnalyzerUrl + '/analyze/status/' + currentTaskId,
+                    url: floppaAnalyzerUrl + '/status/' + currentTaskId,
                     type: 'GET',
                     success: function (response) {
                         updateFloppaStatus(null, response.progress, response.log);

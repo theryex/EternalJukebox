@@ -29,6 +29,71 @@ object AnalysisAPI : IAPI {
         router.post("/upload/:id")
             .handler(BodyHandler.create().setDeleteUploadedFilesOnEnd(true).setBodyLimit(10 * 1000 * 1000))
         router.post("/upload/:id").suspendingHandler(this::upload)
+        
+        // Floppa analyzer proxy endpoints
+        router.post("/floppa/analyze").handler(BodyHandler.create().setBodyLimit(1000 * 1000))
+        router.post("/floppa/analyze").suspendingHandler(this::floppaAnalyze)
+        router.get("/floppa/status/:taskId").suspendingHandler(this::floppaStatus)
+    }
+
+    private suspend fun floppaAnalyze(context: RoutingContext) {
+        val analyzerUrl = EternalJukebox.config.analyzerUrl ?: "http://floppa-analyzer:6874"
+        val body = context.body().asString()
+        
+        try {
+            val (_, response, result) = Fuel.post("$analyzerUrl/analyze/")
+                .header("Content-Type" to "application/json")
+                .body(body)
+                .awaitStringResponseResult()
+            
+            result.fold(
+                success = { data ->
+                    context.response()
+                        .putHeader("Content-Type", "application/json")
+                        .setStatusCode(response.statusCode)
+                        .end(data)
+                },
+                failure = { error ->
+                    logger.error("Floppa analyze error: ${error.message}")
+                    context.response()
+                        .setStatusCode(502)
+                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}"))
+                }
+            )
+        } catch (e: Exception) {
+            logger.error("Floppa analyze exception", e)
+            context.response()
+                .setStatusCode(502)
+                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}"))
+        }
+    }
+
+    private suspend fun floppaStatus(context: RoutingContext) {
+        val taskId = context.pathParam("taskId")
+        val analyzerUrl = EternalJukebox.config.analyzerUrl ?: "http://floppa-analyzer:6874"
+        
+        try {
+            val (_, response, result) = Fuel.get("$analyzerUrl/analyze/status/$taskId")
+                .awaitStringResponseResult()
+            
+            result.fold(
+                success = { data ->
+                    context.response()
+                        .putHeader("Content-Type", "application/json")
+                        .setStatusCode(response.statusCode)
+                        .end(data)
+                },
+                failure = { error ->
+                    context.response()
+                        .setStatusCode(502)
+                        .end(jsonObjectOf("error" to "Analyzer unavailable: ${error.message}"))
+                }
+            )
+        } catch (e: Exception) {
+            context.response()
+                .setStatusCode(502)
+                .end(jsonObjectOf("error" to "Analyzer error: ${e.message}"))
+        }
     }
 
     private suspend fun listLoadedSongs(context: RoutingContext) {
