@@ -38,7 +38,7 @@ object AnalysisAPI : IAPI {
 
     private suspend fun floppaAnalyze(context: RoutingContext) {
         val analyzerUrl = EternalJukebox.config.analyzerUrl ?: "http://floppa-analyzer:6874"
-        val bodyStr: String = context.body().asString() ?: "{}"
+        val bodyStr: String = context.bodyAsString ?: "{}"
         
         try {
             val (_, response, result) = Fuel.post("$analyzerUrl/analyze/")
