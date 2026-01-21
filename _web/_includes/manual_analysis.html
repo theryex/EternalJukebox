@@ -160,25 +160,8 @@
             $('#manual-upload-section').show();
         }
 
-        // Initialize when manual-analysis div is shown
+        // Initialize when page is ready
         $(document).ready(function () {
-            var observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        var target = $(mutation.target);
-                        if (target.attr('id') === 'manual-analysis' && target.is(':visible')) {
-                            startFloppaAnalysis();
-                            observer.disconnect();
-                        }
-                    }
-                });
-            });
-
-            observer.observe(document.getElementById('manual-analysis'), {
-                attributes: true,
-                attributeFilter: ['style']
-            });
-
             // Setup current song link
             var trackId = getSpotifyIdFromUrl();
             if (trackId) {
