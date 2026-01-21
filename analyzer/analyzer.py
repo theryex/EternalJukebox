@@ -16,8 +16,10 @@ class FloppaAnalyzer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.use_gpu = (self.device == "cuda")
         print(f"--- 2026 Hybrid Analyzer: {self.device.upper()} mode ---")
+        print(f"--- Output directory: {self.output_dir} ---")
         
         if not os.path.exists(self.output_dir):
+            print(f"--- Creating output directory: {self.output_dir} ---")
             os.makedirs(self.output_dir)
 
     def load_audio_ffmpeg(self, file_path):
@@ -155,8 +157,10 @@ class FloppaAnalyzer:
         }
 
         dest_path = os.path.join(self.output_dir, f"{track_id}.json")
+        print(f"--- Saving analysis to: {dest_path} ---")
         with open(dest_path, "w") as f:
             # Force NumPy types to float during dump
             json.dump(final_json, f, default=lambda x: float(x))
+        print(f"--- Analysis saved successfully! ---")
         
         return final_json, dest_path
