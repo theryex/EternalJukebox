@@ -161,7 +161,12 @@ object AnalysisAPI : IAPI {
     private suspend fun analyseSpotify(context: RoutingContext) {
         if (EternalJukebox.storage.shouldStore(EnumStorageType.ANALYSIS)) {
             val id = context.pathParam("id")
-            if (EternalJukebox.storage.isStored("$id.json", EnumStorageType.ANALYSIS)) {
+            logger.info("analyseSpotify: Checking for analysis of track $id")
+            
+            val analysisExists = EternalJukebox.storage.isStored("$id.json", EnumStorageType.ANALYSIS)
+            logger.info("analyseSpotify: ANALYSIS storage has $id.json: $analysisExists")
+            
+            if (analysisExists) {
                 if (EternalJukebox.storage.provide("$id.json", EnumStorageType.ANALYSIS, context, context.clientInfo))
                     return
 
@@ -170,6 +175,9 @@ object AnalysisAPI : IAPI {
                     return context.response().putHeader("X-Client-UID", context.clientInfo.userUID)
                         .end(data, "application/json")
             }
+            
+            val uploadedExists = EternalJukebox.storage.isStored("$id.json", EnumStorageType.UPLOADED_ANALYSIS)
+            logger.info("analyseSpotify: UPLOADED_ANALYSIS storage has $id.json: $uploadedExists")
 
             if (EternalJukebox.storage.shouldStore(EnumStorageType.UPLOADED_ANALYSIS)) {
                 if (EternalJukebox.storage.isStored("$id.json", EnumStorageType.UPLOADED_ANALYSIS)) {
