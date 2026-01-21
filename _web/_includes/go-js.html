@@ -314,8 +314,8 @@
     }
 
     function fetchAnalysis(id) {
-        // First, try to get cached analysis from local storage
-        var url = '/api/analysis/' + id;
+        // First, try to get cached analysis from the server
+        var url = '/api/analysis/analyse/' + id;
         info('Checking for cached analysis...');
 
         $.ajax({
