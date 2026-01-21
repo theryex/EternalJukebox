@@ -15,29 +15,30 @@ app: jukebox
         <button id="search"> Search</button>
     </div>
     <div id="sel-text"> Or select a
-        <span class="sel-list" id="popular-list">popular</span>
+        <span class="sel-list" id="popular-list">popular</span> |
+        <span class="sel-list" id="loaded-list">loaded</span>
         track:
     </div>
     <ul id="song-list"></ul>
 </div>
 </div>
 <div id="running" style="display: none;">
-<div id="details">
-    <a href="" target="_blank" id="song-url"><span id="song-title"> </span></a>
-    <span id="button-panel">
+    <div id="details">
+        <a href="" target="_blank" id="song-url"><span id="song-title"> </span></a>
+        <span id="button-panel">
             <button class="cbut" id="new"> New song</button>
             <button class="cbut" id="tune"> Tune </button>
             <button class="cbut" id="go"> Play</button>
         </span>
-    {% include tweet.html %}
-</div>
+        {% include tweet.html %}
+    </div>
 
-<div id="tiles"></div>
+    <div id="tiles"></div>
 
-<div id="stats">
-    <span id="sbeats"> Total Beats: <span id="beats"> 0 </span></span>
-    <span id="stime"> Listen Time: <span id="time"> 00:00:00 </span></span>
-</div>
+    <div id="stats">
+        <span id="sbeats"> Total Beats: <span id="beats"> 0 </span></span>
+        <span id="stime"> Listen Time: <span id="time"> 00:00:00 </span></span>
+    </div>
 </div>
 
 <script type="text/javascript">
@@ -385,8 +386,14 @@ app: jukebox
     }
 
     function listPopularTracks() {
-        $.getJSON('/api/site/popular/jukebox', {count: 30}, function (data) {
+        $.getJSON('/api/site/popular/jukebox', { count: 30 }, function (data) {
             listTracks('#popular-list', data);
+        });
+    }
+
+    function listLoadedTracks() {
+        $.getJSON('/api/analysis/loaded', function (data) {
+            listTracks('#loaded-list', data);
         });
     }
 
@@ -402,7 +409,7 @@ app: jukebox
             success: function (data) {
                 gotTheAnalysis(data);
             },
-            error: function(xhr, textStatus, error) {
+            error: function (xhr, textStatus, error) {
                 if (xhr.responseJSON && typeof xhr.responseJSON.error === "string") {
                     error = xhr.responseJSON.error;
                 }
@@ -962,9 +969,9 @@ app: jukebox
         normalColor: "#5f9",
 
         move: function (x, y) {
-            this.rect.attr({x: x, y: y});
+            this.rect.attr({ x: x, y: y });
             if (this.label) {
-                this.label.attr({x: x + 2, y: y + 8});
+                this.label.attr({ x: x + 2, y: y + 8 });
             }
         },
 
@@ -1246,7 +1253,7 @@ app: jukebox
 
         if (q.length > 0) {
             var url = '/api/analysis/search';
-            $.getJSON(url, {query: q, results: 30}, function (data) {
+            $.getJSON(url, { query: q, results: 30 }, function (data) {
                 console.log(data);
                 for (var i = 0; i < data.length; i++) {
                     data[i].id = data[i].id;
@@ -1298,6 +1305,14 @@ app: jukebox
             }
         );
 
+        $("#popular-list").click(function () {
+            listPopularTracks();
+        });
+
+        $("#loaded-list").click(function () {
+            listLoadedTracks();
+        });
+
         $("#tune").click(
             function () {
                 var controls = $("#controls");
@@ -1318,7 +1333,7 @@ app: jukebox
                 width: 350,
                 position: [4, 4],
                 resizable: false,
-                close: function() {
+                close: function () {
                     jukeboxData.tuningOpen = false;
                 }
             }
@@ -1331,7 +1346,7 @@ app: jukebox
         );
 
         $("#close-tune").click(
-            function() {
+            function () {
                 var controls = $("#controls");
                 controls.dialog('close');
             }
@@ -1374,72 +1389,72 @@ app: jukebox
         );
 
         $("#threshold-slider").slider({
-                max: 80,
-                min: 2,
-                step: 1,
-                value: 30,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.currentThreshold = ui.value;
-                        drawVisualization();
-                    }
-                },
-
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.currentThreshold = ui.value;
-                    }
+            max: 80,
+            min: 2,
+            step: 1,
+            value: 30,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.currentThreshold = ui.value;
+                    drawVisualization();
                 }
+            },
 
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.currentThreshold = ui.value;
+                }
             }
+
+        }
         );
 
         $("#probability-slider").slider({
-                max: 100,
-                min: 0,
-                range: true,
-                step: 1,
-                values: [
-                    Math.round(defaultMinRandomBranchChance * 100),
-                    Math.round(defaultMaxRandomBranchChance * 100)
-                ],
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
-                        setTunedURL();
-                    }
-                },
+            max: 100,
+            min: 0,
+            range: true,
+            step: 1,
+            values: [
+                Math.round(defaultMinRandomBranchChance * 100),
+                Math.round(defaultMaxRandomBranchChance * 100)
+            ],
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
+                    setTunedURL();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
                 }
             }
+        }
         );
 
         $("#probability-ramp-slider").slider({
-                max: 100,
-                min: 0,
-                step: 2,
-                value: 30,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.randomBranchChanceDelta =
-                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
-                        setTunedURL();
-                    }
-                },
+            max: 100,
+            min: 0,
+            step: 2,
+            value: 30,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.randomBranchChanceDelta =
+                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
+                    setTunedURL();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.randomBranchChanceDelta =
-                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.randomBranchChanceDelta =
+                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
                 }
             }
+        }
         );
 
         $("#audio-url").keypress(function (event) {
@@ -1452,26 +1467,26 @@ app: jukebox
         });
 
         $("#audio-offset-slider").slider({
-                max: 20,
-                min: -10,
-                step: 0.1,
-                value: 0,
-                change: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.audioOffset = ui.value;
-                        setTrackOffset();
-                    }
-                },
+            max: 20,
+            min: -10,
+            step: 0.1,
+            value: 0,
+            change: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.audioOffset = ui.value;
+                    setTrackOffset();
+                }
+            },
 
-                slide: function (event, ui) {
-                    if (event.originalEvent) {
-                        jukeboxData.audioOffset = ui.value;
-                    }
+            slide: function (event, ui) {
+                if (event.originalEvent) {
+                    jukeboxData.audioOffset = ui.value;
                 }
             }
+        }
         );
 
-        $("#audio-offset").change(function(event){
+        $("#audio-offset").change(function (event) {
             jukeboxData.audioOffset = event.target.valueAsNumber;
         }).keypress(function (event) {
             var keycode = event.keyCode || event.which;
@@ -1479,7 +1494,7 @@ app: jukebox
                 jukeboxData.audioOffset = event.target.valueAsNumber;
                 setTrackOffset();
             }
-        }).blur(function(event){
+        }).blur(function (event) {
             jukeboxData.audioOffset = event.target.valueAsNumber;
             setTrackOffset();
         });
@@ -1531,7 +1546,7 @@ app: jukebox
             max: 100,
             value: 50,
             range: "min",
-            slide: function(event, ui) {
+            slide: function (event, ui) {
                 $("#volume").text(ui.value);
                 player.audioGain.gain.value = ui.value / 100;
                 //setVolume(ui.value / 100);
@@ -2050,11 +2065,11 @@ app: jukebox
 
 
 <div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable"
-     style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
+    style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
     <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1"
-                                                                                            class="ui-dialog-title">Fine tune your endless song</span><a
-            href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
-            class="ui-icon ui-icon-closethick"></span></a></div>
+            class="ui-dialog-title">Fine tune your endless song</span><a href="#"
+            class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
+                class="ui-icon ui-icon-closethick"></span></a></div>
     <div id="controls" visibility="visible" style="display: block;" class="ui-dialog-content ui-widget-content">
         <div>
             <div id="control-instructions">
@@ -2066,7 +2081,7 @@ app: jukebox
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
                     id="threshold-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                    style="left: 35.8974%;"></a></div>
+                        style="left: 35.8974%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Higher<br> Quality </span>
                     <span class="right-label"> More <br>Branches </span>
@@ -2082,7 +2097,8 @@ app: jukebox
                     id="probability-slider">
                     <div class="ui-slider-range ui-widget-header" style="left: 18%; width: 32%;"></div>
                     <a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 18%;"></a><a
-                    class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 50%;"></a></div>
+                        class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 50%;"></a>
+                </div>
                 <div id="slider-labels">
                     <span class="left-label"> Low </span>
                     <span class="right-label"> High </span>
@@ -2096,7 +2112,7 @@ app: jukebox
                 </div>
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
                     id="probability-ramp-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                    style="left: 30%;"></a></div>
+                        style="left: 30%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Slow </span>
                     <span class="right-label"> Fast </span>
@@ -2104,21 +2120,23 @@ app: jukebox
             </div>
             <br clear="all">
             <div class="l-cb" id="l-last-branch"> Loop extension optimization: <input id="last-branch" checked="checked"
-                type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-reverse-branch"> Allow only reverse branches : <input id="reverse-branch"
-                type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-long-branch"> Allow only long branches : <input id="long-branch" type="checkbox">
             </div>
             <div class="l-cb" id="l-sequential-branch"> Remove sequential branches: <input id="sequential-branch"
-                type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-disable-keys"> Disable Keypresses: <input id="disable-keys" type="checkbox"></div>
-            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url" enterkeyhint="go"></div>
+            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url"
+                    enterkeyhint="go"></div>
             <div id="audio-offset-div">
-                <div id="saudio-offset"><span> Audio offset in seconds:&nbsp; </span><input id="audio-offset" type="number" value="0" step="any"/></div>
+                <div id="saudio-offset"><span> Audio offset in seconds:&nbsp; </span><input id="audio-offset"
+                        type="number" value="0" step="any" /></div>
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
                     id="audio-offset-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                    style="left: 35.8974%;"></a></div>
+                        style="left: 35.8974%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> -10 s </span>
                     <span class="right-label"> 20 s </span>
@@ -2131,14 +2149,15 @@ app: jukebox
                 </form>
                 <div class='progress_outer' id="audio-progress" style="background-color: green;">
                     <div id='_progress' class='progress'></div>
-                </div></div>
+                </div>
+            </div>
             <br>
             <div id="volume-div">
                 <div id="svolume"> Volume: <span id="volume"> 50 </span></div>
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
                     id="volume-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                    style="left: 50%;"></a></div>
+                        style="left: 50%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Quiet </span>
                     <span class="right-label"> Loud </span>
@@ -2163,4 +2182,4 @@ app: jukebox
             <button class="btn btn-small" id="reset-edges"> Reset</button>
             <button class="btn btn-small" id="close-tune"> Close</button>
         </div>
-</div>
+    </div>

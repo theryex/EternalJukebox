@@ -1,7 +1,15 @@
 <div id="manual-analysis" style="display: none;">
     <h2>🎷 Floppa Analyzer</h2>
 
-    <div id="floppa-status">
+    <div id="floppa-start-section">
+        <p>No analysis found for this track. Click the button below to analyze it with Floppa:</p>
+        <button id="floppa-start-btn" class="btn btn-primary" onclick="startFloppaAnalysis()"
+            style="font-size: 1.1em; padding: 10px 20px;">
+            🎵 Start Analysis
+        </button>
+    </div>
+
+    <div id="floppa-status" style="display: none;">
         <p id="floppa-message">Preparing to analyze this track...</p>
         <div class='progress_outer' id="floppa-progress-container"
             style="background-color: #333; max-width: 400px; height: 24px; border-radius: 4px; overflow: hidden;">
@@ -82,6 +90,10 @@
                 showFloppaError('No track ID found in URL');
                 return;
             }
+
+            // Hide the start button, show progress section
+            $('#floppa-start-section').hide();
+            $('#floppa-status').show();
 
             var spotifyUrl = 'https://open.spotify.com/track/' + trackId;
 

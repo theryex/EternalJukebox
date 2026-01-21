@@ -327,12 +327,9 @@
                 gotTheAnalysis(data);
             },
             error: function (xhr, textStatus, error) {
-                // No cached analysis - trigger Floppa analyzer directly
-                info('No cached analysis. Starting Floppa Analyzer...');
+                // No cached analysis - show manual analysis option (user must click button to start)
+                info('No analysis found. Click "Start Analysis" to analyze this track.');
                 $("#manual-analysis").show();
-                if (typeof startFloppaAnalysis === 'function') {
-                    startFloppaAnalysis();
-                }
             }
         });
     }
