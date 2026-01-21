@@ -67,7 +67,7 @@ def run_full_process(track_id, meta):
 @app.post("/analyze/")
 async def start_analysis(req: AnalysisRequest, background_tasks: BackgroundTasks):
     meta = grabber.get_metadata(req.url)
-    if not meta: raise HTTPException(status_code=400, detail="Invalid Spotify URL")
+    if not meta: raise HTTPException(status_code=400, detail="Invalid URL. Supported: Spotify track URLs and YouTube video URLs")
     
     track_id = meta['id']
     task_status[track_id] = {"status": "queued", "progress": 0, "log": f"Waking up Floppa for {meta['title']}..."}

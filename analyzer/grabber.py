@@ -16,6 +16,35 @@ class JukeboxGrabber:
         self.audio_dir = os.getenv("JUKEBOX_AUDIO_DIR", "/mnt/ai_drive/EternalJukebox/data/audio/")
 
     def get_metadata(self, track_url):
+        # Check if it's a YouTube URL
+        youtube_patterns = [
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
+        ]
+        
+        for pattern in youtube_patterns:
+            match = re.search(pattern, track_url)
+            if match:
+                video_id = match.group(1)
+                # Fetch metadata from YouTube using yt-dlp
+                try:
+                    with yt_dlp.YoutubeDL({'quiet': True, 'no_warnings': True}) as ydl:
+                        info = ydl.extract_info(track_url, download=False)
+                        return {
+                            "id": f"yt-{video_id}",
+                            "name": info.get('title', 'Unknown'),
+                            "artist": info.get('uploader', 'Unknown'),
+                            "album": "YouTube",
+                            "title": info.get('title', 'Unknown'),
+                            "isrc": None,
+                            "duration_ms": int(info.get('duration', 0) * 1000),
+                            "source": "youtube",
+                            "youtube_url": track_url
+                        }
+                except Exception as e:
+                    print(f"YouTube metadata extraction failed: {e}")
+                    return None
+        
+        # Otherwise, treat as Spotify URL
         try:
             track_id = track_url.split("track/")[1].split("?")[0]
             t = self.sp.track(track_id)
@@ -26,7 +55,8 @@ class JukeboxGrabber:
                 "album": t['album']['name'],
                 "title": f"{t['artists'][0]['name']} - {t['name']}",
                 "isrc": t.get('external_ids', {}).get('isrc'),
-                "duration_ms": t['duration_ms']
+                "duration_ms": t['duration_ms'],
+                "source": "spotify"
             }
         except Exception as e:
             return None
@@ -37,7 +67,6 @@ class JukeboxGrabber:
             print(msg)
 
         track_id = meta['id']
-        spotify_dur = meta['duration_ms'] / 1000.0
         
         ydl_opts = {
             'format': 'bestaudio[ext=m4a]/bestaudio/best',
@@ -46,6 +75,16 @@ class JukeboxGrabber:
             'postprocessors': [{'key': 'FFmpegExtractAudio', 'preferredcodec': 'm4a'}],
         }
 
+        # If source is YouTube, download directly from the URL
+        if meta.get('source') == 'youtube':
+            report(f"Downloading from YouTube: {meta.get('title', 'Unknown')}")
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([meta['youtube_url']])
+            return os.path.join(self.audio_dir, f"{track_id}.m4a"), meta.get('title', 'Unknown')
+        
+        # Otherwise, search for Spotify track on YouTube
+        spotify_dur = meta['duration_ms'] / 1000.0
+        
         clean_name = re.sub(r'[?\"\'\(\)]', '', meta['name'])
         clean_artist = re.sub(r'[?\"\'\(\)]', '', meta['artist'])
         
