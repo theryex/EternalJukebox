@@ -1710,6 +1710,12 @@ app: jukebox
     }
 
     function Driver(player) {
+        // Timing constants for smooth transitions (matching Creighton's improvements)
+        var LATE_TOLERANCE_SECONDS = 0.04;  // Allow 40ms grace for late processing
+        var JUMP_OFFSET_FRACTION = 0.06;    // Skip into beat by 6% of duration
+        var MIN_JUMP_OFFSET_SECONDS = 0.015;
+        var MAX_JUMP_OFFSET_SECONDS = 0.05;
+
         var curTile = null;
         var curOp = null;
         var incr = 1;
@@ -1719,6 +1725,7 @@ app: jukebox
         var nextTime = 0;
         var lateCounter = 0;
         var lateLimit = 5;
+        var lastProcessTime = null;
 
         var beatDiv = $("#beats");
         var timeDiv = $("#time");
@@ -1830,7 +1837,8 @@ app: jukebox
                 if (curTile) {
                     var ctime = player.curTime();
                     // if we are consistently late we should shutdown
-                    if (ctime > (nextTime + 0.01)) {
+                    // Use the late tolerance constant for smoother transitions
+                    if (ctime > (nextTime + LATE_TOLERANCE_SECONDS)) {
                         lateCounter++;
                         if (lateCounter >= lateLimit && windowHidden()) {
                             info("Sorry, can't play music properly in the background");
