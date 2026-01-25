@@ -120,7 +120,37 @@
     }
 
     function createTiles(qtype) {
+        {% if page.app == 'canonizer' %}
+        return createTileLinear(qtype);
+        {% else %}
         return createTileCircle(qtype, 250);
+        {% endif %}
+    }
+
+    function createTileLinear(qtype) {
+        var y_padding = 90;
+        var x_padding = 50;
+        var tiles = [];
+        var qlist = track.analysis[qtype];
+        var n = qlist.length;
+        var width = minTileWidth;
+        var R = 0; // Not used for linear, but kept for compatibility if needed
+
+        paper.clear();
+
+        var totalWidth = W - 2 * x_padding;
+        var tileWidth = totalWidth / n;
+
+        for (var i = 0; i < qlist.length; i++) {
+            var tile = createNewTile(i, qlist[i], tileWidth, 50); // Height 50
+            var x = x_padding + i * tileWidth;
+            var y = y_padding;
+            tile.move(x, y);
+            tiles.push(tile);
+        }
+
+        jukeboxData.branchCount = 0;
+        return tiles;
     }
 
     function createTileCircle(qtype, radius) {
