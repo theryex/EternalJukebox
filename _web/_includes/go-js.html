@@ -2250,7 +2250,30 @@
     }
 
 
-    // fetchAnalysis is defined earlier in this file - removed duplicate here
+    function fetchAnalysis(id) {
+        var url = 'api/analysis/analyse/' + id;
+        info('Fetching the analysis');
+        $.ajax({
+            url: url,
+            dataType: "json",
+            type: "GET",
+            crossDomain: true,
+            success: function (data) {
+                gotTheAnalysis(data);
+            },
+            error: function (xhr, textStatus, error) {
+                if (xhr.responseJSON) {
+                    if (typeof xhr.responseJSON.error === "string") {
+                        error = xhr.responseJSON.error;
+                    }
+                    if (xhr.responseJSON.show_manual_analysis_info) {
+                        $("#manual-analysis").show();
+                    }
+                }
+                info("Sorry, can't find info for that track: " + error)
+            }
+        });
+    }
 
     function fetchOgAudioSource(id) {
         $.ajax({

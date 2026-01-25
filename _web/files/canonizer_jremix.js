@@ -2,7 +2,7 @@
 function createJRemixer(context) {
     var remixer = {
 
-        remixTrack : function(track, canonizerData, callback) {
+        remixTrack: function (track, canonizerData, callback) {
 
             function fetchAudio(url) {
                 var request = new XMLHttpRequest();
@@ -12,15 +12,15 @@ function createJRemixer(context) {
                 request.responseType = "arraybuffer";
                 this.request = request;
 
-                request.onload = function() {
+                request.onload = function () {
                     trace('audio loaded');
                     context.decodeAudioData(request.response,
-                        function(buffer) {      // completed function
+                        function (buffer) {      // completed function
                             track.buffer = buffer;
                             track.status = 'ok'
                             callback(1, track, 100);
                         },
-                        function(e) { // error function
+                        function (e) { // error function
                             track.status = 'error: loading audio'
                             callback(-1, track, 0);
                             console.log('audio error', e);
@@ -29,14 +29,14 @@ function createJRemixer(context) {
                     );
                 };
 
-                request.onerror = function(e) {
+                request.onerror = function (e) {
                     trace('error loading loaded');
                     track.status = 'error: loading audio'
                     callback(-1, track, 0);
                 };
 
-                request.onprogress = function(e) {
-                    var percent = Math.round(e.position * 100  / e.totalSize);
+                request.onprogress = function (e) {
+                    var percent = Math.round(e.loaded * 100 / e.total);
                     callback(0, track, percent);
                 };
                 request.send();
@@ -46,7 +46,7 @@ function createJRemixer(context) {
                 trace('preprocessTrack');
                 var types = ['sections', 'bars', 'beats', 'tatums', 'segments'];
 
-                
+
                 for (var i in types) {
                     var type = types[i];
                     trace('preprocessTrack ' + type);
@@ -59,13 +59,13 @@ function createJRemixer(context) {
                         q.track = track;
                         q.which = j;
                         if (j > 0) {
-                            q.prev = qlist[j-1];
+                            q.prev = qlist[j - 1];
                         } else {
                             q.prev = null
                         }
-                        
+
                         if (j < qlist.length - 1) {
-                            q.next = qlist[j+1];
+                            q.next = qlist[j + 1];
                         } else {
                             q.next = null
                         }
@@ -97,7 +97,7 @@ function createJRemixer(context) {
                     var seg = track.analysis.segments[i];
                     var last = fsegs[fsegs.length - 1];
                     if (isSimilar(seg, last) && seg.confidence < threshold) {
-                        fsegs[fsegs.length -1].duration += seg.duration;
+                        fsegs[fsegs.length - 1].duration += seg.duration;
                     } else {
                         fsegs.push(seg);
                     }
@@ -122,8 +122,8 @@ function createJRemixer(context) {
 
                     for (var j = last; j < qchildren.length; j++) {
                         var qchild = qchildren[j];
-                        if (qchild.start >= qparent.start 
-                                    && qchild.start < qparent.start + qparent.duration) {
+                        if (qchild.start >= qparent.start
+                            && qchild.start < qparent.start + qparent.duration) {
                             qchild.parent = qparent;
                             qchild.indexInParent = qparent.children.length;
                             qparent.children.push(qchild);
@@ -150,7 +150,7 @@ function createJRemixer(context) {
                             q.oseg = qseg;
                             last = j;
                             break
-                        } 
+                        }
                     }
                 }
             }
@@ -184,7 +184,7 @@ function createJRemixer(context) {
             fetchAudio(canonizerData.audioURL === null ? "api/audio/jukebox/" + track.info.id : ("api/audio/external?fallbackID=" + track.info.id + "&url=" + encodeURIComponent(canonizerData.audioURL)));
         },
 
-        getPlayer : function() {
+        getPlayer: function () {
             var curQ = null;
             var curAudioSource = null;
             var masterGain = .53;
@@ -264,15 +264,15 @@ function createJRemixer(context) {
             }
 
             var player = {
-                play: function(when, q, duration, gain) {
+                play: function (when, q, duration, gain) {
                     return playQuantumWithDurationSimple(when, q, duration, gain);
                 },
 
-                playQ: function(q) {
+                playQ: function (q) {
                     return playQ(q);
                 },
 
-                stop: function() {
+                stop: function () {
                     if (curAudioSource) {
                         curAudioSource.stop(0);
                         curAudioSource = null;
@@ -283,7 +283,7 @@ function createJRemixer(context) {
                     }
                 },
 
-                curTime: function() {
+                curTime: function () {
                     return context.currentTime;
                 }
             }
