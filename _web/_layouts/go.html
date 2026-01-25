@@ -2,15 +2,15 @@
 layout: default
 
 buttons:
-   - name: Play
-     id: go
-   - name: Tune
-     id: tune
-   - name: Short URL
-     id: short-url
-   - name: Original Audio Source
-     id: og-audio-source
-     link: true
+- name: Play
+id: go
+- name: Tune
+id: tune
+- name: Short URL
+id: short-url
+- name: Original Audio Source
+id: og-audio-source
+link: true
 ---
 
 <div id='info-div'>
@@ -27,13 +27,15 @@ buttons:
             <br>
             <span id="button-panel">
                 {% for item in layout.buttons %}
-                    {% if item.link %}
-                        <a class="btn btn-small btn-default" role="button" id="{{ item.id }}">{{ item.name }}</a>
-                    {% else %}
-                        <button class="btn btn-small btn-default" id="{{ item.id }}">{{ item.name }}</button>
-                    {% endif %}
+                {% if item.link %}
+                <a class="btn btn-small btn-default" role="button" id="{{ item.id }}">{{ item.name }}</a>
+                {% else %}
+                <button class="btn btn-small btn-default" id="{{ item.id }}">{{ item.name }}</button>
+                {% endif %}
                 {% endfor %}
-                {% if page.app == 'jukebox' %}<a class="btn btn-small btn-default" role="button" id="canonize">Auto Canonizer Version</a>{% elsif page.app == 'canonizer' %}<a class="btn btn-small btn-default" role="button" id="jukebox">Eternal Jukebox Version</a>{% endif %}
+                {% if page.app == 'jukebox' %}<a class="btn btn-small btn-default" role="button" id="canonize">Auto
+                    Canonizer Version</a>{% elsif page.app == 'canonizer' %}<a class="btn btn-small btn-default"
+                    role="button" id="jukebox" href="#">Eternal Jukebox Version</a>{% endif %}
             </span>
         </div>
         {{ content }}
@@ -44,11 +46,11 @@ buttons:
 
 {% if page.app == 'jukebox' %}
 <div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable"
-     style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
+    style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
     <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1"
-                                                                                            class="ui-dialog-title">Fine tune your endless song</span><a
-            href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
-            class="ui-icon ui-icon-closethick"></span></a></div>
+            class="ui-dialog-title">Fine tune your endless song</span><a href="#"
+            class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
+                class="ui-icon ui-icon-closethick"></span></a></div>
     <div id="controls" visibility="visible" style="display: block;" class="ui-dialog-content ui-widget-content">
         <div>
             <div id="control-instructions">
@@ -59,8 +61,8 @@ buttons:
                 <div id="sthreshold"> Branch Similarity Threshold: <span id="threshold"> 50 </span></div>
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                     id="threshold-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                                              style="left: 35.8974%;"></a></div>
+                    id="threshold-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
+                        style="left: 35.8974%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Higher<br> Quality </span>
                     <span class="right-label"> More <br>Branches </span>
@@ -73,10 +75,11 @@ buttons:
                     <span id="max-prob">50</span>%
                 </div>
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                     id="probability-slider">
+                    id="probability-slider">
                     <div class="ui-slider-range ui-widget-header" style="left: 18%; width: 32%;"></div>
                     <a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 18%;"></a><a
-                        class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 50%;"></a></div>
+                        class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 50%;"></a>
+                </div>
                 <div id="slider-labels">
                     <span class="left-label"> Low </span>
                     <span class="right-label"> High </span>
@@ -89,8 +92,8 @@ buttons:
                     <span id="ramp-speed">9</span>%
                 </div>
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                     id="probability-ramp-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                                                     style="left: 30%;"></a></div>
+                    id="probability-ramp-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
+                        style="left: 30%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Slow </span>
                     <span class="right-label"> Fast </span>
@@ -98,21 +101,23 @@ buttons:
             </div>
             <br clear="all">
             <div class="l-cb" id="l-last-branch"> Loop extension optimization: <input id="last-branch" checked="checked"
-                                                                                      type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-reverse-branch"> Allow only reverse branches : <input id="reverse-branch"
-                                                                                          type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-long-branch"> Allow only long branches : <input id="long-branch" type="checkbox">
             </div>
             <div class="l-cb" id="l-sequential-branch"> Remove sequential branches: <input id="sequential-branch"
-                                                                                           type="checkbox"></div>
+                    type="checkbox"></div>
             <div class="l-cb" id="l-disable-keys"> Disable Keypresses: <input id="disable-keys" type="checkbox"></div>
-            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url" enterkeyhint="go"></div>
+            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url"
+                    enterkeyhint="go"></div>
             <div id="audio-offset-div">
-                <div id="saudio-offset"><span> Audio offset in seconds:&nbsp; </span><input id="audio-offset" type="number" value="0" step="any"/></div>
+                <div id="saudio-offset"><span> Audio offset in seconds:&nbsp; </span><input id="audio-offset"
+                        type="number" value="0" step="any" /></div>
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
                     id="audio-offset-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                    style="left: 35.8974%;"></a></div>
+                        style="left: 35.8974%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> -10 s </span>
                     <span class="right-label"> 20 s </span>
@@ -125,14 +130,15 @@ buttons:
                 </form>
                 <div class='progress_outer' id="audio-progress" style="background-color: green;">
                     <div id='_progress' class='progress'></div>
-                </div></div>
+                </div>
+            </div>
             <br>
             <div id="volume-div">
                 <div id="svolume"> Volume: <span id="volume"> 50 </span></div>
 
                 <div class="slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all"
-                     id="volume-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
-                                              style="left: 50%;"></a></div>
+                    id="volume-slider"><a class="ui-slider-handle ui-state-default ui-corner-all" href="#"
+                        style="left: 50%;"></a></div>
                 <div id="slider-labels">
                     <span class="left-label"> Quiet </span>
                     <span class="right-label"> Loud </span>
@@ -161,17 +167,18 @@ buttons:
 </div>
 {% elsif page.app == 'canonizer' %}
 <div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable"
-     style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
+    style="display: none; outline: 0px none; z-index: 1000;" tabindex="-1" role="dialog" aria-labelledby="ui-id-1">
     <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix"><span id="ui-id-1"
-                                                                                            class="ui-dialog-title">Fine tune your endless song</span><a
-            href="#" class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
-            class="ui-icon ui-icon-closethick"></span></a></div>
+            class="ui-dialog-title">Fine tune your endless song</span><a href="#"
+            class="ui-dialog-titlebar-close ui-corner-all" role="button"><span
+                class="ui-icon ui-icon-closethick"></span></a></div>
     <div id="controls" visibility="visible" style="display: block;" class="ui-dialog-content ui-widget-content">
         <div>
             <div id="control-instructions">
                 You can retune the Auto Canonizer to use a different audio track here.
             </div>
-            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url" enterkeyhint="go"></div>
+            <div class="l-cb" id="l-audio-url">Audio URL: <input id="audio-url" type="text" inputmode="url"
+                    enterkeyhint="go"></div>
             <br>
             <div class="l-cb" id="l-audio-upload">
                 <form id="audio-upload-form">
@@ -179,7 +186,8 @@ buttons:
                 </form>
                 <div class='progress_outer' id="audio-progress" style="background-color: green;">
                     <div id='_progress' class='progress'></div>
-                </div></div>
+                </div>
+            </div>
             <button class="btn btn-small" id="reset-edges"> Reset</button>
         </div>
     </div>
