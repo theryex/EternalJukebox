@@ -2,7 +2,7 @@
 function createJRemixer(context) {
     var remixer = {
 
-        remixTrack : function(track, jukeboxData, callback) {
+        remixTrack: function (track, jukeboxData, callback) {
 
             function fetchAudio(url) {
                 var request = new XMLHttpRequest();
@@ -12,15 +12,15 @@ function createJRemixer(context) {
                 request.responseType = "arraybuffer";
                 this.request = request;
 
-                request.onload = function() {
+                request.onload = function () {
                     trace('audio loaded');
                     context.decodeAudioData(request.response,
-                        function(buffer) {      // completed function
+                        function (buffer) {      // completed function
                             track.buffer = buffer;
                             track.status = 'ok';
                             callback(1, track, 100);
                         },
-                        function(e) { // error function
+                        function (e) { // error function
                             track.status = 'error: loading audio';
                             callback(-1, track, 0);
                             document.querySelector("span#info").textContent = "Audio could not be retrieved, provide a youtube link or file on the tune settings"
@@ -29,14 +29,14 @@ function createJRemixer(context) {
                     );
                 };
 
-                request.onerror = function(e) {
+                request.onerror = function (e) {
                     trace('error loading loaded');
                     track.status = 'error: loading audio';
                     callback(-1, track, 0);
                 };
 
-                request.onprogress = function(e) {
-                    var percent = Math.round(e.loaded * 100  / e.total);
+                request.onprogress = function (e) {
+                    var percent = Math.round(e.loaded * 100 / e.total);
                     callback(0, track, percent);
                 };
                 request.send();
@@ -58,13 +58,13 @@ function createJRemixer(context) {
                         q.track = track;
                         q.which = j;
                         if (j > 0) {
-                            q.prev = qlist[j-1];
+                            q.prev = qlist[j - 1];
                         } else {
                             q.prev = null
                         }
 
                         if (j < qlist.length - 1) {
-                            q.next = qlist[j+1];
+                            q.next = qlist[j + 1];
                         } else {
                             q.next = null
                         }
@@ -96,7 +96,7 @@ function createJRemixer(context) {
                     var seg = track.analysis.segments[i];
                     var last = fsegs[fsegs.length - 1];
                     if (isSimilar(seg, last) && seg.confidence < threshold) {
-                        fsegs[fsegs.length -1].duration += seg.duration;
+                        fsegs[fsegs.length - 1].duration += seg.duration;
                     } else {
                         fsegs.push(seg);
                     }
@@ -122,7 +122,7 @@ function createJRemixer(context) {
                     for (var j = last; j < qchildren.length; j++) {
                         var qchild = qchildren[j];
                         if (qchild.start >= qparent.start
-                                    && qchild.start < qparent.start + qparent.duration) {
+                            && qchild.start < qparent.start + qparent.duration) {
                             qchild.parent = qparent;
                             qchild.indexInParent = qparent.children.length;
                             qparent.children.push(qchild);
@@ -184,7 +184,7 @@ function createJRemixer(context) {
         },
 
 
-        getPlayer : function() {
+        getPlayer: function () {
             var audioGain = context.createGain();
             var curAudioSource = null;
             var curQ = null;
