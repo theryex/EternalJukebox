@@ -44,9 +44,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements first for better caching
 COPY requirements.txt .
 
+# Install build prerequisites first (required for madmom which needs Cython)
+RUN pip install --no-cache-dir Cython numpy setuptools wheel
+
 # Install Python dependencies
 # Note: For GPU support, use nvidia/cuda base image and install torch with CUDA
-RUN pip install --no-cache-dir -r requirements.txt
+# --no-build-isolation ensures madmom uses the pre-installed Cython
+RUN pip install --no-cache-dir --no-build-isolation -r requirements.txt
 
 # Install Essentia (prefer binary wheel, fallback to source)
 RUN pip install --only-binary=essentia essentia || pip install essentia || echo "Essentia installation failed, will use fallback"
