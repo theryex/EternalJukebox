@@ -6,15 +6,25 @@ librosa
 numpy
 ffmpeg-python
 numba
-torch
-nnAudio
 scipy
+
+# GPU Acceleration (optional, falls back to CPU if not available)
+torch
+torchaudio
+nnAudio
+
+# EchoNest-quality analysis (high-quality feature extraction)
+# Essentia - professional audio analysis library
+essentia
+
+# Madmom - neural network beat detection
+madmom
 
 # Data & Source Fetching
 spotipy
 yt-dlp
 python-dotenv
 
-#API
+# API
 uvicorn
 fastapi
