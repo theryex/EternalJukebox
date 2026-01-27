@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches: [ "master" ]
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch: 
 
 env:
   REGISTRY: ghcr.io
@@ -31,16 +31,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY  }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=sha,format=short
-            latest
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ id.meta.outputs.tags }}
-          labels: ${{ id.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
