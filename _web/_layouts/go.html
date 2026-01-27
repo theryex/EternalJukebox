@@ -2,15 +2,15 @@
 layout: default
 
 buttons:
-  - name: Play
-    id: go
-  - name: Tune
-    id: tune
-  - name: Short URL
-    id: short-url
-  - name: Original Audio Source
-    id: og-audio-source
-    link: true
+- name: Play
+id: go
+- name: Tune
+id: tune
+- name: Short URL
+id: short-url
+- name: Original Audio Source
+id: og-audio-source
+link: true
 ---
 
 <div id='info-div'>
@@ -26,6 +26,7 @@ buttons:
             <a href="" target="_blank" id="song-url"><span id="song-title"> </span></a>
             <br>
             <span id="button-panel">
+                {% if page.app == 'jukebox' %}
                 {% for item in layout.buttons %}
                 {% if item.link %}
                 <a class="btn btn-small btn-default" role="button" id="{{ item.id }}">{{ item.name }}</a>
@@ -33,9 +34,10 @@ buttons:
                 <button class="btn btn-small btn-default" id="{{ item.id }}">{{ item.name }}</button>
                 {% endif %}
                 {% endfor %}
-                {% if page.app == 'jukebox' %}<a class="btn btn-small btn-default" role="button" id="canonize">Auto
-                    Canonizer Version</a>{% elsif page.app == 'canonizer' %}<a class="btn btn-small btn-default"
-                    role="button" id="jukebox">Eternal Jukebox Version</a>{% endif %}
+                <a class="btn btn-small btn-default" role="button" id="canonize">Auto Canonizer Version</a>
+                {% elsif page.app == 'canonizer' %}
+                <a class="btn btn-small btn-default" role="button" id="jukebox">Eternal Jukebox Version</a>
+                {% endif %}
             </span>
         </div>
         {{ content }}
