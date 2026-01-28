@@ -72,3 +72,4 @@ analyzer/.env
 
 build/
 bin/
+*.bak

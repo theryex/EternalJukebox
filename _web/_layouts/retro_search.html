@@ -1,0 +1,36 @@
+---
+layout: retro
+---
+
+<div id="hero" class="hero-unit">
+    <div class="container">
+        <h2> Search for a song</h2>
+        <div id='select-track'>
+            <div id="search-div">
+                <div id='search-form'>
+                    Search for a track: <input id="search" type="text" class="input-large search-query"
+                        title="Search text">
+                    <button id="go-search" class='btn btn-default'> Search </button>
+                </div>
+            </div>
+        </div>
+        <div id="search-list"> </div>
+        <h2> Use direct Spotify + audio link</h2>
+        <div id='go-with-links'>
+            <div id="direct-links-div">
+                <div id='links-form'>
+                    Spotify link: <input id="direct-spotify" type="text" inputmode="url"
+                        class="input-large search-query" title="Spotify link">
+                    &nbsp;Optional audio link (e.g., YouTube): <input id="direct-audio" type="text" inputmode="url"
+                        class="input-large search-query" title="Audio link">
+                    <button id="go-direct" class='btn btn-default'> Open </button>
+                </div>
+            </div>
+        </div>
+        <h2 id="pick"> Or pick one of these favorites</h2>
+        <div id="popular-list"> </div>
+    </div>
+    <div id='info'> </div>
+</div>
+
+{% include search-js.html %}

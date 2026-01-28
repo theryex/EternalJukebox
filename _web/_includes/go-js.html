@@ -238,7 +238,7 @@
         if (title == null || title.length === 0 || title === '(unknown title)' || title === 'undefined') {
             title = "Unknown Title";
         } else if (artist !== '(unknown artist)') {
-            title = title + ' by ' + artist;
+                title = title + ' by ' + artist;
         }
         return title;
     }
@@ -314,9 +314,8 @@
     }
 
     function fetchAnalysis(id) {
-        // First, try to get cached analysis from the server
         var url = '/api/analysis/analyse/' + id;
-        info('Checking for cached analysis...');
+        info('Fetching the analysis');
 
         $.ajax({
             url: url,
@@ -326,10 +325,16 @@
             success: function (data) {
                 gotTheAnalysis(data);
             },
-            error: function (xhr, textStatus, error) {
-                // No cached analysis - show manual analysis option (user must click button to start)
-                info('No analysis found. Click "Start Analysis" to analyze this track.');
-                $("#manual-analysis").show();
+            error: function(xhr, textStatus, error) {
+                if (xhr.responseJSON) {
+                    if (typeof xhr.responseJSON.error === "string") {
+                        error = xhr.responseJSON.error;
+                    }
+                    if (xhr.responseJSON.show_manual_analysis_info) {
+                        $("#manual-analysis").show();
+                    }
+                }
+                info("Sorry, can't find info for that track: " + error)
             }
         });
     }
@@ -905,9 +910,9 @@
         normalColor: "#5f9",
 
         move: function (x, y) {
-            this.rect.attr({ x: x, y: y });
+            this.rect.attr({x: x, y: y});
             if (this.label) {
-                this.label.attr({ x: x + 2, y: y + 8 });
+                this.label.attr({x: x + 2, y: y + 8});
             }
         },
 
@@ -1252,7 +1257,7 @@
                 width: 350,
                 position: [4, 4],
                 resizable: false,
-                close: function () {
+                close: function() {
                     jukeboxData.tuningOpen = false;
                 }
             }
@@ -1265,7 +1270,7 @@
         );
 
         $("#close-tune").click(
-            function () {
+            function() {
                 var controls = $("#controls");
                 controls.dialog('close');
             }
@@ -1308,72 +1313,72 @@
         );
 
         $("#threshold-slider").slider({
-            max: 80,
-            min: 2,
-            step: 1,
-            value: 30,
-            change: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.currentThreshold = ui.value;
-                    drawVisualization();
-                }
-            },
+                max: 80,
+                min: 2,
+                step: 1,
+                value: 30,
+                change: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.currentThreshold = ui.value;
+                        drawVisualization();
+                    }
+                },
 
-            slide: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.currentThreshold = ui.value;
+                slide: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.currentThreshold = ui.value;
+                    }
                 }
+
             }
-
-        }
         );
 
         $("#probability-slider").slider({
-            max: 100,
-            min: 0,
-            range: true,
-            step: 1,
-            values: [
-                Math.round(defaultMinRandomBranchChance * 100),
-                Math.round(defaultMaxRandomBranchChance * 100)
-            ],
-            change: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
-                    setTunedURL();
-                }
-            },
+                max: 100,
+                min: 0,
+                range: true,
+                step: 1,
+                values: [
+                    Math.round(defaultMinRandomBranchChance * 100),
+                    Math.round(defaultMaxRandomBranchChance * 100)
+                ],
+                change: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
+                        setTunedURL();
+                    }
+                },
 
-            slide: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
-                    jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
+                slide: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.minRandomBranchChance = ui.values[0] / 100.;
+                        jukeboxData.maxRandomBranchChance = ui.values[1] / 100.;
+                    }
                 }
             }
-        }
         );
 
         $("#probability-ramp-slider").slider({
-            max: 100,
-            min: 0,
-            step: 2,
-            value: 30,
-            change: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.randomBranchChanceDelta =
-                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
-                    setTunedURL();
-                }
-            },
+                max: 100,
+                min: 0,
+                step: 2,
+                value: 30,
+                change: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.randomBranchChanceDelta =
+                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
+                        setTunedURL();
+                    }
+                },
 
-            slide: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.randomBranchChanceDelta =
-                        map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
+                slide: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.randomBranchChanceDelta =
+                            map_percent_to_range(ui.value, minRandomBranchChanceDelta, maxRandomBranchChanceDelta)
+                    }
                 }
             }
-        }
         );
 
         $("#audio-url").keypress(function (event) {
@@ -1386,26 +1391,26 @@
         });
 
         $("#audio-offset-slider").slider({
-            max: 20,
-            min: -10,
-            step: 0.1,
-            value: 0,
-            change: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.audioOffset = ui.value;
-                    setTrackOffset();
-                }
-            },
+                max: 20,
+                min: -10,
+                step: 0.1,
+                value: 0,
+                change: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.audioOffset = ui.value;
+                        setTrackOffset();
+                    }
+                },
 
-            slide: function (event, ui) {
-                if (event.originalEvent) {
-                    jukeboxData.audioOffset = ui.value;
+                slide: function (event, ui) {
+                    if (event.originalEvent) {
+                        jukeboxData.audioOffset = ui.value;
+                    }
                 }
             }
-        }
         );
 
-        $("#audio-offset").change(function (event) {
+        $("#audio-offset").change(function(event){
             jukeboxData.audioOffset = event.target.valueAsNumber;
         }).keypress(function (event) {
             var keycode = event.keyCode || event.which;
@@ -1413,7 +1418,7 @@
                 jukeboxData.audioOffset = event.target.valueAsNumber;
                 setTrackOffset();
             }
-        }).blur(function (event) {
+        }).blur(function(event){
             jukeboxData.audioOffset = event.target.valueAsNumber;
             setTrackOffset();
         });
@@ -1433,7 +1438,7 @@
                     xhr.upload.addEventListener("progress", function (evt) {
                         if (evt.lengthComputable) {
                             var percentComplete = evt.loaded / evt.total;
-                            percentComplete = percentComplete * 100;
+                            percentComplete = Math.floor(percentComplete * 100);
                             $('#audio-progress').text(percentComplete + '%');
                             $('#audio-progress').css('width', percentComplete + '%');
                         }
@@ -1446,7 +1451,10 @@
                     window.location.reload(true);
                 },
                 error: function (xhr, textStatus, error) {
-                    console.log("Error upon attempting to upload: " + error);
+                    if (xhr.responseJSON && typeof xhr.responseJSON.error === "string") {
+                        error = xhr.responseJSON.error;
+                    }
+                    window.alert("Error upon attempting to upload: " + error);
                 }
             });
         });
@@ -1465,7 +1473,7 @@
             max: 100,
             value: 50,
             range: "min",
-            slide: function (event, ui) {
+            slide: function(event, ui) {
                 $("#volume").text(ui.value);
                 player.audioGain.gain.value = ui.value / 100;
                 //setVolume(ui.value / 100);
@@ -1625,12 +1633,6 @@
     }
 
     function Driver(player) {
-        // Timing constants for smooth transitions (matching Creighton's improvements)
-        var LATE_TOLERANCE_SECONDS = 0.04;  // Allow 40ms grace for late processing
-        var JUMP_OFFSET_FRACTION = 0.06;    // Skip into beat by 6% of duration
-        var MIN_JUMP_OFFSET_SECONDS = 0.015;
-        var MAX_JUMP_OFFSET_SECONDS = 0.05;
-
         var curTile = null;
         var curOp = null;
         var incr = 1;
@@ -1640,7 +1642,6 @@
         var nextTime = 0;
         var lateCounter = 0;
         var lateLimit = 5;
-        var lastProcessTime = null;
 
         var beatDiv = $("#beats");
         var timeDiv = $("#time");
@@ -1752,8 +1753,7 @@
                 if (curTile) {
                     var ctime = player.curTime();
                     // if we are consistently late we should shutdown
-                    // Use the late tolerance constant for smoother transitions
-                    if (ctime > (nextTime + LATE_TOLERANCE_SECONDS)) {
+                    if (ctime > (nextTime + 0.01)) {
                         lateCounter++;
                         if (lateCounter >= lateLimit && windowHidden()) {
                             info("Sorry, can't play music properly in the background");
@@ -2261,7 +2261,7 @@
             success: function (data) {
                 gotTheAnalysis(data);
             },
-            error: function (xhr, textStatus, error) {
+            error: function(xhr, textStatus, error) {
                 if (xhr.responseJSON) {
                     if (typeof xhr.responseJSON.error === "string") {
                         error = xhr.responseJSON.error;
@@ -2386,7 +2386,7 @@
                 width: 385,
                 position: [4, 4],
                 resizable: false,
-                close: function () {
+                close: function() {
                     canonizerData.tuningOpen = false;
                 }
             }
@@ -2418,7 +2418,7 @@
                     xhr.upload.addEventListener("progress", function (evt) {
                         if (evt.lengthComputable) {
                             var percentComplete = evt.loaded / evt.total;
-                            percentComplete = percentComplete * 100;
+                            percentComplete = Math.floor(percentComplete * 100);
                             $('#audio-progress').text(percentComplete + '%');
                             $('#audio-progress').css('width', percentComplete + '%');
                         }
@@ -2431,7 +2431,10 @@
                     window.location.reload(true);
                 },
                 error: function (xhr, textStatus, error) {
-                    console.log("Error: " + error);
+                    if (xhr.responseJSON && typeof xhr.responseJSON.error === "string") {
+                        error = xhr.responseJSON.error;
+                    }
+                    window.alert("Error upon attempting to upload: " + error);
                 }
             });
         });
@@ -2655,16 +2658,14 @@
         normalizeColor();
         var HB = H - vPad;
         var TW = W - hPad;
-        var tiles = [];
 
-        _.each(qlist, function (q, i) {
-            var width = TW * q.duration / trackDuration;
-            var height = HB;
+        for (var i = 0; i < qlist.length; i++) {
+            var q = qlist[i];
+            var tileWidth = TW * q.duration / trackDuration;
             var x = hPad + TW * q.start / trackDuration;
-            var y = 0;
-            var tile = createTile(i, q, x, y, width, height);
-            tiles.push(tile);
-        });
+            var height = (H - vPad) * Math.pow(q.median_volume, 4);
+            createTile(i, q, x, HB - height, tileWidth, height);
+        }
         drawConnections(qlist);
         drawSections();
         updateCursors(qlist[0]);
@@ -2739,13 +2740,13 @@
         }
         var TW = W - hPad;
         var x = hPad + TW * q.start / trackDuration - cursorWidth / 2;
-        masterCursor.attr({ x: x });
+        masterCursor.attr({x: x});
 
         var ox = hPad + TW * q.other.start / trackDuration - cursorWidth / 2;
         if (q.ppath) {
             moveAlong(otherCursor, q.ppath, q.other.duration * .75);
         } else {
-            otherCursor.attr({ x: ox });
+            otherCursor.attr({x: ox});
         }
     }
 
@@ -2759,12 +2760,12 @@
         function animate() {
             var coords = path.getPointAtLength(curStep / steps * plength);
             if (curStep++ < steps) {
-                rect.attr({ x: coords.x, y: coords.y });
+                rect.attr({x: coords.x, y: coords.y});
                 setTimeout(function () {
                     animate();
                 }, frame * 1000);
             } else {
-                rect.attr({ y: oy });
+                rect.attr({y: oy});
             }
         }
 
@@ -2802,8 +2803,8 @@
             return q.loudness_max;
         } else if (q.overlappingSegments.length > 0) {
             _.each(q.overlappingSegments, function (seg, i) {
-                sum += seg.loudness_max;
-            }
+                    sum += seg.loudness_max;
+                }
             );
             return sum / q.overlappingSegments.length;
         } else {
@@ -2824,20 +2825,20 @@
         var maxV = -60;
 
         _.each(qlist, function (q, j) {
-            var vol = average_volume(q);
-            q.raw_volume = vol;
-            if (vol > maxV) {
-                maxV = vol;
+                var vol = average_volume(q);
+                q.raw_volume = vol;
+                if (vol > maxV) {
+                    maxV = vol;
+                }
+                if (vol < minV) {
+                    minV = vol;
+                }
             }
-            if (vol < minV) {
-                minV = vol;
-            }
-        }
         );
 
         _.each(qlist, function (q, j) {
-            q.volume = interp(q.raw_volume, minV, maxV);
-        }
+                q.volume = interp(q.raw_volume, minV, maxV);
+            }
         );
         calcWindowMedian(qlist, 'volume', 'median_volume', 20);
     }
